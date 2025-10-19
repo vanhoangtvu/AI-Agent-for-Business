@@ -46,10 +46,13 @@ public class SecurityConfig {
                 .requestMatchers(
                     "/auth/**",
                     "/public/**",
-                    "/ws/**",
                     "/webhook/**",
+                    "/ws/**",
+                    "/chatbot/chat",
+                    "/chatbot/widget-config",
                     "/swagger-ui/**",
-                    "/api-docs/**",
+                    "/v3/api-docs/**",
+                    "/swagger-ui.html",
                     "/actuator/**"
                 ).permitAll()
                 .requestMatchers("/admin/**").hasRole("ADMIN")
@@ -75,7 +78,11 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList("http://localhost:3008", "http://localhost:3000"));
+        configuration.setAllowedOrigins(Arrays.asList(
+            "http://localhost:3007", 
+            "http://localhost:3000",
+            "http://113.170.159.180:3007"
+        ));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
         configuration.setExposedHeaders(Arrays.asList("Authorization"));

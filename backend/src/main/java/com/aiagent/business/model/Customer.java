@@ -76,10 +76,10 @@ public class Customer {
     @Column(name = "total_orders", nullable = false)
     private Integer totalOrders = 0;
 
-    @Column(name = "total_spent", precision = 15, scale = 2, nullable = false)
+    @Column(name = "total_spent", nullable = false)
     private Double totalSpent = 0.0;
 
-    @Column(name = "average_order_value", precision = 15, scale = 2, nullable = false)
+    @Column(name = "average_order_value", nullable = false)
     private Double averageOrderValue = 0.0;
 
     @Column(name = "last_order_at")
@@ -88,10 +88,10 @@ public class Customer {
     @Column(name = "last_contact_at")
     private LocalDateTime lastContactAt;
 
-    @Column(name = "lifetime_value", precision = 15, scale = 2, nullable = false)
+    @Column(name = "lifetime_value", nullable = false)
     private Double lifetimeValue = 0.0;
 
-    @Column(name = "churn_probability", precision = 5, scale = 2, nullable = false)
+    @Column(name = "churn_probability", nullable = false)
     private Double churnProbability = 0.0;
 
     @Column(columnDefinition = "TEXT")

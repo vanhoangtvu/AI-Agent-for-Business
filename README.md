@@ -295,14 +295,14 @@ Khách hàng gửi tin nhắn
   └─ Zalo Personal → WebSocket/Polling → API Gateway
                            ↓
                     Chatbot Service
-                           ↓
-                 RAG Engine truy vấn
-                 Vector Database
-                           ↓
-              Context + Query → Gemini API
-                           ↓
-              AI Response ← Chatbot Service
-                           ↓
+                                              ↓
+                                    RAG Engine truy vấn
+                                    Vector Database
+                                              ↓
+                                    Context + Query → Gemini API
+                                              ↓
+                                    AI Response ← Chatbot Service
+                                              ↓
          ┌─────────┴─────────────────┐
          ↓                            ↓
   Lưu lịch sử → MySQL      Check AI Mode:

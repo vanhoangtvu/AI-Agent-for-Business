@@ -55,13 +55,13 @@ public class Product {
     @Column(name = "images", columnDefinition = "TEXT")
     private String images; // CSV of image URLs
 
-    @Column(name = "price", precision = 15, scale = 2, nullable = false)
+    @Column(name = "price", nullable = false)
     private Double price;
 
-    @Column(name = "sale_price", precision = 15, scale = 2)
+    @Column(name = "sale_price")
     private Double salePrice;
 
-    @Column(name = "cost_price", precision = 15, scale = 2)
+    @Column(name = "cost_price")
     private Double costPrice;
 
     @Column(name = "stock_quantity", nullable = false)
@@ -79,10 +79,10 @@ public class Product {
     @Column(name = "total_sold", nullable = false)
     private Integer totalSold = 0;
 
-    @Column(name = "total_revenue", precision = 15, scale = 2, nullable = false)
+    @Column(name = "total_revenue", nullable = false)
     private Double totalRevenue = 0.0;
 
-    @Column(name = "rating", precision = 3, scale = 2)
+    @Column(name = "rating")
     private Double rating;
 
     @Column(name = "review_count", nullable = false)

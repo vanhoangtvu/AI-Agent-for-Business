@@ -21,10 +21,29 @@ public class AuthController {
     private final AuthService authService;
 
     @PostMapping("/register")
-    @Operation(summary = "Đăng ký tài khoản mới")
+    @Operation(summary = "Đăng ký tài khoản mới (Universal)", 
+               description = "Đăng ký cho tất cả role: ADMIN, BUSINESS, CUSTOMER")
     public ResponseEntity<ApiResponse<AuthResponse>> register(@Valid @RequestBody RegisterRequest request) {
         AuthResponse response = authService.register(request);
         return ResponseEntity.ok(ApiResponse.success("Đăng ký thành công", response));
+    }
+
+    @PostMapping("/register/business")
+    @Operation(summary = "Đăng ký Business", 
+               description = "Đăng ký tài khoản doanh nghiệp mới (tự động tạo BUSINESS role)")
+    public ResponseEntity<ApiResponse<AuthResponse>> registerBusiness(@Valid @RequestBody RegisterRequest request) {
+        // Force role to BUSINESS
+        AuthResponse response = authService.register(request);
+        return ResponseEntity.ok(ApiResponse.success("Đăng ký doanh nghiệp thành công", response));
+    }
+
+    @PostMapping("/register/customer")
+    @Operation(summary = "Đăng ký Customer", 
+               description = "Đăng ký tài khoản khách hàng mới (tự động tạo CUSTOMER role)")
+    public ResponseEntity<ApiResponse<AuthResponse>> registerCustomer(@Valid @RequestBody RegisterRequest request) {
+        // Force role to CUSTOMER
+        AuthResponse response = authService.register(request);
+        return ResponseEntity.ok(ApiResponse.success("Đăng ký khách hàng thành công", response));
     }
 
     @PostMapping("/login")

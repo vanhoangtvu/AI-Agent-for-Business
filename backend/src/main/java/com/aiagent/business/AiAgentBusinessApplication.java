@@ -34,8 +34,8 @@ public class AiAgentBusinessApplication {
         SpringApplication.run(AiAgentBusinessApplication.class, args);
         System.out.println("=================================================");
         System.out.println("AI Agent for Business API is running");
-        System.out.println("API Base URL: http://localhost:8088/api/v1");
-        System.out.println("Swagger UI: http://localhost:8088/swagger-ui.html");
+        System.out.println("API Base URL: http://localhost:8087/api/v1");
+        System.out.println("Swagger UI: http://localhost:8087/swagger-ui.html");
         System.out.println("=================================================");
     }
 }

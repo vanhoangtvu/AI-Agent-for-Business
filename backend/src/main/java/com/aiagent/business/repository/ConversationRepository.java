@@ -13,6 +13,12 @@ public interface ConversationRepository extends JpaRepository<Conversation, Long
     
     Page<Conversation> findByBusinessId(Long businessId, Pageable pageable);
     
+    Page<Conversation> findByCustomerId(Long customerId, Pageable pageable);
+    
+    Optional<Conversation> findByIdAndBusinessId(Long id, Long businessId);
+    
+    Optional<Conversation> findByIdAndCustomerId(Long id, Long customerId);
+    
     Optional<Conversation> findByBusinessIdAndId(Long businessId, Long id);
     
     Optional<Conversation> findByChannelAndChannelConversationId(
@@ -25,5 +31,7 @@ public interface ConversationRepository extends JpaRepository<Conversation, Long
         Conversation.Status status, 
         Pageable pageable
     );
+    
+    long countByBusinessId(Long businessId);
 }
 

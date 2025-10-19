@@ -44,19 +44,19 @@ public class Order {
     @Column(name = "status", nullable = false)
     private OrderStatus status = OrderStatus.PENDING;
 
-    @Column(name = "subtotal", precision = 15, scale = 2, nullable = false)
+    @Column(name = "subtotal", nullable = false)
     private Double subtotal;
 
-    @Column(name = "discount", precision = 15, scale = 2, nullable = false)
+    @Column(name = "discount", nullable = false)
     private Double discount = 0.0;
 
-    @Column(name = "shipping_fee", precision = 15, scale = 2, nullable = false)
+    @Column(name = "shipping_fee", nullable = false)
     private Double shippingFee = 0.0;
 
-    @Column(name = "tax", precision = 15, scale = 2, nullable = false)
+    @Column(name = "tax", nullable = false)
     private Double tax = 0.0;
 
-    @Column(name = "total_amount", precision = 15, scale = 2, nullable = false)
+    @Column(name = "total_amount", nullable = false)
     private Double totalAmount;
 
     @Enumerated(EnumType.STRING)

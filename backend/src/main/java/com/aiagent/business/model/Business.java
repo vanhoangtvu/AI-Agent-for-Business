@@ -86,7 +86,7 @@ public class Business {
     @Column(name = "total_orders", nullable = false)
     private Integer totalOrders = 0;
 
-    @Column(name = "total_revenue", precision = 15, scale = 2, nullable = false)
+    @Column(name = "total_revenue", nullable = false)
     private Double totalRevenue = 0.0;
 
     @CreatedDate

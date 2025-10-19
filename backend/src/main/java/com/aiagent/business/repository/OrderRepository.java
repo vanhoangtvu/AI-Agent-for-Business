@@ -14,11 +14,21 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     
     Page<Order> findByBusinessId(Long businessId, Pageable pageable);
     
+    Page<Order> findByCustomerId(Long customerId, Pageable pageable);
+    
+    Optional<Order> findByIdAndBusinessId(Long id, Long businessId);
+    
+    Optional<Order> findByIdAndCustomerId(Long id, Long customerId);
+    
     Optional<Order> findByBusinessIdAndId(Long businessId, Long id);
     
     Optional<Order> findByOrderNumber(String orderNumber);
     
     Page<Order> findByBusinessIdAndCustomerId(Long businessId, Long customerId, Pageable pageable);
+    
+    Page<Order> findByBusinessIdAndStatus(Long businessId, String status, Pageable pageable);
+    
+    Page<Order> findByCustomerIdAndStatus(Long customerId, String status, Pageable pageable);
     
     long countByBusinessId(Long businessId);
     

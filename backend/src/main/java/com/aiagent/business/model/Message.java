@@ -75,7 +75,7 @@ public class Message {
     @Column(name = "is_ai_generated", nullable = false)
     private Boolean isAiGenerated = false;
 
-    @Column(name = "ai_confidence", precision = 5, scale = 2)
+    @Column(name = "ai_confidence")
     private Double aiConfidence;
 
     @Column(name = "ai_intent")
