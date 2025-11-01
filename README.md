@@ -1,749 +1,337 @@
 # 🤖 AI Agent for Business
 
-<div align="center">
+> **Đồ Án Chuyên Ngành - Đại Học Trà Vinh**
+> 
+> Hệ thống AI thông minh hỗ trợ doanh nghiệp trong việc chăm sóc khách hàng, tư vấn sản phẩm và đề xuất chiến lược kinh doanh dựa trên dữ liệu nội bộ.
+> 
+> **Sinh viên thực hiện:** Nguyễn Văn Hoàng  
+> **MSSV:** 110122078  
+> **Khoa:** Công Nghệ Thông Tin  
+> **Trường:** Đại Học Trà Vinh  
+> **Giáo viên hướng dẫn:** ThS. TS. Nguyễn Bảo Ân
 
-**Hệ thống Trợ lý AI thông minh cho doanh nghiệp - Kết hợp RAG và MCP Framework**
-
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.x-green.svg)](https://spring.io/projects/spring-boot)
-[![Next.js](https://img.shields.io/badge/Next.js-14.x-black.svg)](https://nextjs.org/)
-[![AI Powered](https://img.shields.io/badge/AI-Gemini%20API-purple.svg)](https://ai.google.dev/)
-
-</div>
+[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.2-brightgreen.svg)](https://spring.io/projects/spring-boot)
+[![Next.js](https://img.shields.io/badge/Next.js-14-black.svg)](https://nextjs.org/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.104-teal.svg)](https://fastapi.tiangolo.com/)
+[![Python](https://img.shields.io/badge/Python-3.11-yellow.svg)](https://www.python.org/)
+[![Java](https://img.shields.io/badge/Java-17-red.svg)](https://openjdk.org/)
 
 ---
 
-## 📋 Mục lục
+## 📋 Mục Lục
 
-- [Giới thiệu](#-giới-thiệu)
-- [Tính năng chính](#-tính-năng-chính)
-- [Kiến trúc hệ thống](#-kiến-trúc-hệ-thống)
-- [Công nghệ sử dụng](#-công-nghệ-sử-dụng)
-- [RAG & MCP Framework](#-rag--mcp-framework)
-- [Cài đặt](#-cài-đặt)
-- [Sử dụng](#-sử-dụng)
+- [Tổng Quan](#-tổng-quan)
+- [Kiến Trúc Hệ Thống](#-kiến-trúc-hệ-thống)
+- [Thành Phần Chính](#-thành-phần-chính)
+- [Chức Năng Chi Tiết](#-chức-năng-chi-tiết)
+- [Luồng Hoạt Động](#-luồng-hoạt-động)
+- [Công Nghệ Sử Dụng](#-công-nghệ-sử-dụng)
+- [Cài Đặt & Chạy Dự Án](#-cài-đặt--chạy-dự-án)
+- [Cấu Trúc Thư Mục](#-cấu-trúc-thư-mục)
 - [API Documentation](#-api-documentation)
-- [Roadmap](#-roadmap)
-- [Đóng góp](#-đóng-góp)
-- [License](#-license)
-- [Liên hệ](#-liên-hệ)
+- [Đóng Góp](#-đóng-góp)
 
 ---
 
-## 🎯 Giới thiệu
+## 🎯 Tổng Quan
 
-**AI Agent for Business** là một hệ thống trợ lý AI toàn diện được thiết kế dành riêng cho doanh nghiệp vừa và nhỏ tại Việt Nam. Dự án sử dụng công nghệ **RAG (Retrieval-Augmented Generation)** kết hợp với **LLM (Large Language Model)**, được tổ chức theo framework **MCP (Model – Context – Process)** để phân tích và thiết kế hệ thống một cách rõ ràng, mang đến giải pháp tự động hóa chăm sóc khách hàng, quản lý dữ liệu bán hàng và phân tích chiến lược kinh doanh thông minh.
+**AI Agent for Business** là một hệ thống AI đa chức năng được thiết kế để:
 
-### 🎯 Mục tiêu
+- 💬 **Chăm sóc khách hàng tự động** với chatbot thông minh
+- 📚 **Tư vấn sản phẩm** dựa trên knowledge base nội bộ
+- 📊 **Phân tích và đề xuất chiến lược kinh doanh** từ dữ liệu thực tế
+- 🔍 **Tìm kiếm thông minh** với RAG (Retrieval-Augmented Generation)
+- 📈 **Báo cáo tự động** với insights dựa trên AI
 
-- **Tự động hóa CSKH**: Chatbot AI trả lời khách hàng 24/7 trên nhiều kênh
-- **Đa kênh linh hoạt**: Website Widget + Zalo OA + Zalo Personal
-- **Quản lý hiệu quả**: Hệ thống CRM mini quản lý khách hàng, sản phẩm, đơn hàng
-- **Phân tích thông minh**: AI phân tích dữ liệu và đề xuất chiến lược kinh doanh
-- **Độ chính xác cao**: RAG giúp AI trả lời dựa trên tài liệu nội bộ thực tế
-- **Linh hoạt kiểm soát**: 3 chế độ AI (Tự động / Gợi ý / Thông báo)
+### Điểm Nổi Bật
 
-### 💡 Giá trị cốt lõi
-
-- ✅ **Tiết kiệm chi phí**: Giảm 70% chi phí nhân sự CSKH
-- ✅ **Tăng hiệu suất**: Xử lý hàng trăm yêu cầu đồng thời
-- ✅ **Chính xác**: Trả lời dựa trên dữ liệu thật từ doanh nghiệp
-- ✅ **Thông minh**: AI học hỏi và cải thiện liên tục
-- ✅ **Linh hoạt**: Dùng Zalo cá nhân hoặc OA, không bắt buộc
-- ✅ **Kiểm soát**: 3 chế độ AI phù hợp mọi tình huống
+✅ **Kiến trúc Microservices**: Tách biệt frontend, backend và AI service  
+✅ **RAG-Powered**: Kết hợp tìm kiếm vector với Gemini AI  
+✅ **Real-time Communication**: WebSocket cho chat tức thì  
+✅ **Multi-format Support**: Xử lý PDF, DOC, DOCX, TXT, Excel  
+✅ **Scalable & Secure**: JWT authentication, RBAC, Redis caching  
 
 ---
 
-## 🚀 Tính năng chính
-
-### 1. 💬 Chatbot tư vấn khách hàng đa kênh
-
-<table>
-<tr>
-<td width="50%">
-
-**Tích hợp đa kênh**
-- 🌐 Website (Chatbot Widget)
-- 💬 Zalo OA (Official Account)
-- 👤 Zalo Personal (Tài khoản cá nhân)
-- 📱 Tương tác trực tiếp với khách hàng
-- 🔔 Gửi thông báo tự động
-- 📊 Quản lý hội thoại tập trung
-
-</td>
-<td width="50%">
-
-**Chức năng thông minh**
-- ❓ Trả lời FAQ tự động
-- 🛒 Ghi nhận đơn hàng từ chat
-- 🔍 Tìm kiếm sản phẩm
-- 📦 Tra cứu đơn hàng
-- 🤖 AI trả lời 24/7
-
-</td>
-</tr>
-</table>
-
-**Ví dụ hội thoại (Website hoặc Zalo OA):**
-```
-📱 Kênh: Website Widget / Zalo OA
-
-Khách: "Em muốn mua iPhone 15 Pro Max màu xanh"
-
-🤖 AI Bot: "Dạ, em có thông tin sản phẩm như sau:
-     
-     📱 iPhone 15 Pro Max 256GB - Xanh Titan
-     💰 Giá: 29.990.000đ
-     ✅ Tình trạng: Còn hàng (15 sản phẩm)
-     🎁 Khuyến mãi: Tặng ốp lưng + cường lực
-     
-     Anh/chị có muốn đặt hàng không ạ?"
-
-Khách: "Đặt 1 chiếc cho em"
-
-🤖 AI Bot: "Dạ em ghi nhận đơn hàng:
-     - Sản phẩm: iPhone 15 Pro Max 256GB
-     - Số lượng: 1
-     - Tổng tiền: 29.990.000đ
-     
-     Anh/chị vui lòng cung cấp:
-     📍 Địa chỉ nhận hàng
-     📞 Số điện thoại liên hệ"
-```
-
-**Tính năng đặc biệt:**
-- 🔄 Đồng bộ hội thoại giữa Website và Zalo
-- 📊 Theo dõi tất cả kênh trong 1 Dashboard
-- 🎯 AI nhận diện khách hàng qua cả 3 kênh
-- 🤖 3 chế độ AI: Tự động / Gợi ý / Chỉ thông báo
-
----
-
-## 🤔 So sánh: Zalo OA vs Zalo Personal
-
-| Tiêu chí | 💬 Zalo OA | 👤 Zalo Personal |
-|----------|------------|------------------|
-| **Chi phí** | Mất phí đăng ký & xác minh | Miễn phí (dùng tài khoản có sẵn) |
-| **Độ tin cậy** | Cao (có dấu tích xanh) | Trung bình (tài khoản cá nhân) |
-| **Giới hạn tin nhắn** | Không giới hạn | Có thể bị giới hạn nếu spam |
-| **Template Message** | ✅ Có | ❌ Không |
-| **Broadcast** | ✅ Có | ⚠️ Hạn chế |
-| **API chính thức** | ✅ Có | ❌ Không (unofficial) |
-| **Rủi ro** | ✅ An toàn | ⚠️ Có thể bị khóa nếu spam |
-| **Phù hợp cho** | Doanh nghiệp lớn, thương hiệu | Doanh nghiệp nhỏ, test, cửa hàng online |
-| **Setup** | Phức tạp (cần xác minh) | Đơn giản (quét QR) |
-| **AI Mode** | Chỉ tự động | Tự động / Gợi ý / Thông báo |
-
-### 💡 Khuyến nghị:
-
-**Dùng Zalo Personal khi:**
-- ✅ Mới bắt đầu kinh doanh online
-- ✅ Chưa có Zalo OA
-- ✅ Muốn test trước khi đầu tư
-- ✅ Muốn kiểm soát câu trả lời AI
-
-**Dùng Zalo OA khi:**
-- ✅ Đã có thương hiệu rõ ràng
-- ✅ Cần gửi tin nhắn hàng loạt
-- ✅ Muốn tích hợp Zalo Pay
-- ✅ Cần độ tin cậy cao
-
-**Dùng cả hai khi:**
-- ✅ Muốn tối ưu hiệu quả
-- ✅ OA cho thông báo, Personal cho tư vấn chi tiết
-- ✅ Tách biệt kênh chăm sóc khách hàng
-
-### 2. 📊 Quản lý doanh nghiệp (CRM Mini)
-
-#### **Quản lý khách hàng**
-- 👥 Danh sách khách hàng với phân loại (VIP, thường, tiềm năng)
-- 📝 Lịch sử mua hàng và tương tác
-- 🎂 Nhắc nhở sinh nhật, chăm sóc định kỳ
-- 📞 Thông tin liên hệ đầy đủ
-
-#### **Quản lý sản phẩm**
-- 📦 Danh mục sản phẩm đa cấp
-- 💰 Quản lý giá, khuyến mãi
-- 📊 Theo dõi tồn kho
-- 🖼️ Hình ảnh và mô tả chi tiết
-
-#### **Quản lý đơn hàng**
-- 🛍️ Trạng thái đơn hàng (chờ xác nhận, đang giao, hoàn thành)
-- 💳 Phương thức thanh toán
-- 🚚 Theo dõi vận chuyển
-- 📧 Thông báo tự động
-
-#### **Thống kê & Báo cáo**
-- 📈 Doanh thu theo ngày/tháng/quý/năm
-- 📊 Biểu đồ sản phẩm bán chạy
-- 👑 Top khách hàng VIP
-- 💹 Tỷ lệ chuyển đổi đơn hàng
-- 📉 Phân tích xu hướng
-
-### 3. 🧠 AI Phân tích & Đề xuất chiến lược
-
-#### **Phân tích hành vi khách hàng**
-- 🔍 Phân tích RFM (Recency, Frequency, Monetary)
-- 🎯 Phân khúc khách hàng tự động
-- 📊 Dự đoán xu hướng mua sắm
-- 💡 Gợi ý sản phẩm cá nhân hóa
-
-#### **Đề xuất Marketing**
-```
-📌 Gợi ý từ AI:
-✅ Khách hàng trong nhóm "Đã lâu không mua" đang tăng 15%
-   → Đề xuất: Chạy chiến dịch email marketing với mã giảm giá 20%
-
-✅ Sản phẩm "Tai nghe Bluetooth X" có xu hướng tăng doanh số
-   → Đề xuất: Tăng tồn kho và chạy chiến dịch quảng cáo qua Zalo Ads
-
-✅ Thời điểm tốt nhất đăng bài: 20:00 - 22:00 (tỷ lệ tương tác cao nhất)
-```
-
-#### **Chiến lược kinh doanh**
-- 📅 Lập kế hoạch nhập hàng dựa trên dự đoán
-- 🎁 Gợi ý chương trình khuyến mãi
-- 💰 Tối ưu hóa giá bán
-- 📣 Đề xuất kênh quảng cáo hiệu quả
-
-### 4. 📚 Quản lý tài liệu (RAG - Retrieval-Augmented Generation)
-
-#### **Upload & Xử lý tài liệu**
-- 📄 Hỗ trợ: PDF, DOCX, TXT, CSV, Excel
-- 🔄 Tự động trích xuất và vector hóa nội dung
-- 🗂️ Phân loại tài liệu (chính sách, hướng dẫn, quy trình)
-- 🔍 Tìm kiếm ngữ nghĩa thông minh
-
-#### **Cách hoạt động**
-```
-1. Doanh nghiệp upload: "Chính sách bảo hành.pdf"
-2. Hệ thống xử lý: Tạo embeddings và lưu vào vector database
-3. Khách hỏi: "Sản phẩm được bảo hành bao lâu?"
-4. AI trả lời: "Theo chính sách của công ty, sản phẩm được bảo hành 12 tháng kể từ ngày mua..."
-   (Trích xuất từ tài liệu thực tế)
-```
-
-#### **Lợi ích**
-- ✅ Độ chính xác cao, trả lời dựa trên tài liệu thực tế của doanh nghiệp
-- ✅ Giảm thiểu tối đa việc bịa đặt thông tin (hallucination)
-- ✅ Dễ dàng cập nhật khi doanh nghiệp thay đổi chính sách
-
----
-
-## 🏗️ Kiến trúc hệ thống
+## 🏗️ Kiến Trúc Hệ Thống
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                    USER INTERFACES                           │
-│ [Dashboard] [Widget] [Zalo OA] [Zalo Personal] [Admin]      │
-└─────────────┬───────────────────────────────────────────────┘
-              │
-┌─────────────▼───────────────────────────────────────────────┐
-│                   FRONTEND LAYER                             │
-│  Next.js 14 (App Router) - SSR/SSG & State Management        │
-│  • Dashboard UI  • Chat Interface  • Analytics Charts        │
-└─────────────┬───────────────────────────────────────────────┘
-              │
-              │ REST API / WebSocket
-              │
-┌─────────────▼───────────────────────────────────────────────┐
-│                   API GATEWAY                                │
-│  • Authentication (JWT)  • Rate Limiting  • Load Balancing   │
-└─────────────┬───────────────────────────────────────────────┘
-              │
-┌─────────────▼───────────────────────────────────────────────┐
-│                   BACKEND LAYER                              │
-│  Spring Boot - Business Logic & Services                     │
-│                                                               │
-│  ┌─────────────────────────────────────────────────────┐   │
-│  │  🤖 AI Agent Core                                    │   │
-│  │  ┌──────────────┐  ┌──────────────┐  ┌───────────┐ │   │
-│  │  │  Chatbot     │  │  RAG Engine  │  │ Analytics │ │   │
-│  │  │  Service     │  │  Service     │  │  Service  │ │   │
-│  │  └──────────────┘  └──────────────┘  └───────────┘ │   │
-│  └─────────────────────────────────────────────────────┘   │
-│                                                               │
-│  ┌─────────────────────────────────────────────────────┐   │
-│  │  💼 Business Services                                │   │
-│  │  • Customer Service  • Product Service               │   │
-│  │  • Order Service     • Report Service                │   │
-│  └─────────────────────────────────────────────────────┘   │
-└─────────────┬─────────────┬─────────────┬───────────────────┘
-              │             │             │
-    ┌─────────▼─────┐ ┌────▼─────┐  ┌───▼──────────────┐
-    │   MySQL DB    │ │ Vector   │  │  Google Gemini   │
-    │               │ │ Database │  │      API         │
-    │ • Customers   │ │ (pgvector│  │                  │
-    │ • Products    │ │  or      │  │ • LLM Model      │
-    │ • Orders      │ │ Pinecone)│  │ • Embeddings     │
-    │ • Analytics   │ │          │  │ • AI Analysis    │
-    └───────────────┘ └──────────┘  └──────────────────┘
-              │             │             │
-    ┌─────────▼─────────────▼─────────────▼───────────┐
-    │           EXTERNAL INTEGRATIONS                  │
-    │       • Zalo OA API  • Payment Gateway           │
-    └──────────────────────────────────────────────────┘
-```
-
-### 📐 Luồng xử lý chính
-
-#### **1. Luồng Chat với RAG (Đa kênh)**
-```
-Khách hàng gửi tin nhắn
-  ├─ Website Widget → WebSocket → API Gateway
-  ├─ Zalo OA → Webhook → API Gateway
-  └─ Zalo Personal → WebSocket/Polling → API Gateway
-                           ↓
-                    Chatbot Service
-                                              ↓
-                                    RAG Engine truy vấn
-                                    Vector Database
-                                              ↓
-                                    Context + Query → Gemini API
-                                              ↓
-                                    AI Response ← Chatbot Service
-                                              ↓
-         ┌─────────┴─────────────────┐
-         ↓                            ↓
-  Lưu lịch sử → MySQL      Check AI Mode:
-                           • Auto: Gửi ngay
-                           • Suggestion: Chờ xác nhận
-                           • Notification: Chỉ thông báo
-                           ↓
-                    Response →
-  ├─ Website Widget (real-time)
-  ├─ Zalo OA (qua API)
-  └─ Zalo Personal (qua API/WebSocket)
-```
-
-#### **2. Luồng phân tích AI**
-```
-Dữ liệu bán hàng → Analytics Service → Xử lý & tổng hợp
-                                              ↓
-                                    Gửi lên Gemini API
-                                    để phân tích
-                                              ↓
-                                    AI Insights & Recommendations
-                                              ↓
-                                    Lưu báo cáo → MySQL
-                                              ↓
-                                    Hiển thị Dashboard
+┌─────────────────────────────────────────────────────────────────┐
+│                         USER INTERFACE                          │
+│                   Next.js 14 + TypeScript                       │
+└───────────────────────────┬─────────────────────────────────────┘
+                            │
+                            │ REST API / WebSocket
+                            │
+┌───────────────────────────▼─────────────────────────────────────┐
+│                      BACKEND SERVICE                            │
+│                  Spring Boot 3.x + Java 17                      │
+│  ┌──────────────┐ ┌──────────────┐ ┌──────────────────────┐   │
+│  │   Document   │ │   Chatbot    │ │  Strategic Analysis  │   │
+│  │  Management  │ │   Service    │ │       Service        │   │
+│  └──────────────┘ └──────────────┘ └──────────────────────┘   │
+└───────────┬─────────────────────┬────────────────────────┬─────┘
+            │                     │                        │
+            │                     │                        │
+   ┌────────▼────────┐   ┌────────▼────────┐    ┌────────▼────────┐
+   │  MySQL 8.0      │   │  Redis Cache    │    │   AI Service    │
+   │  + Vector Store │   │  + Session Mgmt │    │  Python FastAPI │
+   └─────────────────┘   └─────────────────┘    │  + Gemini API   │
+                                                 │  + RAG Engine   │
+                                                 └─────────────────┘
 ```
 
 ---
 
-## 🛠️ Công nghệ sử dụng
+## 🧩 Thành Phần Chính
 
-### **Frontend**
-
-| Công nghệ | Mục đích | Version |
-|-----------|----------|---------|
-| ⚡ **Next.js** | React Framework, SSR, SSG, App Router | 14.x |
-| 🎨 **TailwindCSS** | Styling & UI Components | 3.x |
-| 🎭 **Shadcn/ui** | Component Library | Latest |
-| 📊 **Recharts** | Biểu đồ và visualization | Latest |
-| 🔌 **Socket.io Client** | Real-time chat | 4.x |
-| 📦 **Zustand** | State management | Latest |
-| 🔐 **NextAuth.js** | Authentication | 5.x |
-| 🎯 **TypeScript** | Type safety | 5.x |
-| 🔄 **React Query** | Data fetching & caching | Latest |
-
-#### **Tính năng Next.js được sử dụng:**
-
-- ⚡ **App Router**: Routing mới với Server Components
-- 🚀 **Server-Side Rendering (SSR)**: Tối ưu SEO và performance
-- 📦 **Static Site Generation (SSG)**: Pre-render pages tĩnh
-- 🎨 **Server Actions**: Xử lý form và mutations
-- 🖼️ **Image Optimization**: Tự động tối ưu hình ảnh
-- 📱 **Progressive Web App (PWA)**: Hỗ trợ offline mode
-- 🔄 **Incremental Static Regeneration**: Cập nhật nội dung động
-
-### **Backend**
-
-| Công nghệ | Mục đích | Version |
-|-----------|----------|---------|
-| ☕ **Spring Boot** | Framework backend, REST API | 3.x |
-| 🔒 **Spring Security** | Authentication & Authorization | 6.x |
-| 🎫 **JWT** | Token-based authentication | - |
-| 💾 **Spring Data JPA** | ORM, database access | 3.x |
-| 🔄 **Spring WebSocket** | Real-time communication | 6.x |
-| 📝 **Lombok** | Reduce boilerplate code | 1.18.x |
-| ✅ **Validation API** | Input validation | - |
-
-### **Database**
-
-| Công nghệ | Mục đích |
-|-----------|----------|
-| 🐬 **MySQL** | Main database (customers, orders, products) |
-| 🔢 **pgvector** / **Pinecone** / **Weaviate** | Vector database for RAG embeddings |
-| 📦 **Redis** | Caching & session management |
-
-### **AI & NLP**
-
-| Công nghệ | Mục đích |
-|-----------|----------|
-| 🤖 **Google Gemini API** | LLM for chatbot, analysis, recommendations |
-| 📊 **LangChain** | RAG orchestration framework |
-| 🔤 **Sentence Transformers** | Text embeddings |
-
-### **DevOps & Deployment**
-
-| Công nghệ | Mục đích |
-|-----------|----------|
-| 🐳 **Docker** | Containerization |
-| 📦 **Docker Compose** | Multi-container orchestration |
-| ☁️ **VPS Ubuntu Server** | Production hosting |
-| 🔄 **GitHub Actions** | CI/CD pipeline |
-| 📊 **Prometheus + Grafana** | Monitoring & analytics |
-
-### **External APIs & Integration**
-
-- 💬 **Zalo Official Account API**: Tích hợp Zalo OA
-  - Webhook xử lý tin nhắn
-  - Gửi tin nhắn tự động
-  - Template messages
-  - User profile API
-- 👤 **Zalo Personal Account**: Tích hợp tài khoản cá nhân (unofficial)
-  - QR Code authentication
-  - Real-time message sync
-  - WebSocket connection
-  - Session management
-  - ⚠️ **Lưu ý**: Không phải API chính thức, có rủi ro bị khóa tài khoản nếu vi phạm điều khoản Zalo
-- 💳 **VNPay / MoMo API**: Payment gateway
+| Thành Phần | Công Nghệ | Chức Năng Chính |
+|-----------|-----------|-----------------|
+| **Frontend** | Next.js 14 + TypeScript | Giao diện người dùng, SSR/SSG, real-time chat |
+| **Backend** | Spring Boot 3.x + Java 17 | Business logic, API, security, database |
+| **AI Service** | Python 3.11 + FastAPI | Xử lý RAG, tích hợp Gemini API |
+| **Database** | MySQL 8.0 + Vector Extensions | Lưu trữ dữ liệu và vector embeddings |
+| **Cache** | Redis 7.x | Session management, caching |
 
 ---
 
-## 🧩 RAG & MCP Framework
+## 🔧 Chức Năng Chi Tiết
 
-### 🔍 RAG (Retrieval-Augmented Generation) - Công nghệ AI
+### 1. 📁 Module Quản Lý Tài Liệu
 
-**RAG là gì?**
+#### Upload & Xử Lý Đa Định Dạng
+- ✅ Hỗ trợ format: **PDF, DOC, DOCX, TXT, Excel**
+- ✅ Tự động trích xuất văn bản và metadata
+- ✅ **Chunking thông minh** theo ngữ nghĩa
+- ✅ **Vector hóa** và lưu trữ tối ưu
 
-RAG là kỹ thuật kết hợp giữa tìm kiếm thông tin (Retrieval) và sinh text (Generation) để AI đưa ra câu trả lời chính xác dựa trên dữ liệu thực tế thay vì chỉ dựa vào kiến thức đã học.
-
-**Cách hoạt động trong dự án:**
-
-```
-┌──────────────────────────────────────────────────────────┐
-│  STEP 1: DOCUMENT INGESTION                              │
-│  ┌────────────────┐                                      │
-│  │ Doanh nghiệp   │ → Upload PDF/DOCX/TXT                │
-│  │ upload tài liệu│                                      │
-│  └────────┬───────┘                                      │
-│           │                                               │
-│           ▼                                               │
-│  ┌────────────────────────────────────────────┐         │
-│  │ Text Extraction & Chunking                 │         │
-│  │ - Chia nhỏ văn bản thành chunks 500 tokens │         │
-│  │ - Xử lý định dạng, loại bỏ noise          │         │
-│  └────────┬───────────────────────────────────┘         │
-│           │                                               │
-│           ▼                                               │
-│  ┌────────────────────────────────────────────┐         │
-│  │ Generate Embeddings (Gemini API)           │         │
-│  │ - Chuyển text → vector embeddings         │         │
-│  │ - Model: text-embedding-004 (768 dim)     │         │
-│  └────────┬───────────────────────────────────┘         │
-│           │                                               │
-│           ▼                                               │
-│  ┌────────────────────────────────────────────┐         │
-│  │ Store in Vector Database                   │         │
-│  │ - Lưu embeddings + metadata               │         │
-│  └────────────────────────────────────────────┘         │
-└──────────────────────────────────────────────────────────┘
-
-┌──────────────────────────────────────────────────────────┐
-│  STEP 2: QUERY PROCESSING                                │
-│  ┌────────────────┐                                      │
-│  │ Khách hàng hỏi:│                                      │
-│  │ "Chính sách    │                                      │
-│  │ bảo hành?"     │                                      │
-│  └────────┬───────┘                                      │
-│           │                                               │
-│           ▼                                               │
-│  ┌────────────────────────────────────────────┐         │
-│  │ Generate Query Embedding                   │         │
-│  └────────┬───────────────────────────────────┘         │
-│           │                                               │
-│           ▼                                               │
-│  ┌────────────────────────────────────────────┐         │
-│  │ Vector Similarity Search                   │         │
-│  │ - Tìm top 5 chunks liên quan nhất         │         │
-│  │ - Cosine similarity > 0.7                  │         │
-│  └────────┬───────────────────────────────────┘         │
-│           │                                               │
-│           ▼                                               │
-│  ┌────────────────────────────────────────────┐         │
-│  │ Context: "Sản phẩm được bảo hành 12       │         │
-│  │ tháng kể từ ngày mua. Khách hàng cần...   │         │
-│  └────────┬───────────────────────────────────┘         │
-└───────────┼──────────────────────────────────────────────┘
-
-┌───────────▼──────────────────────────────────────────────┐
-│  STEP 3: GENERATION                                      │
-│  ┌────────────────────────────────────────────┐         │
-│  │ Prompt = Context + Query + Instructions    │         │
-│  └────────┬───────────────────────────────────┘         │
-│           │                                               │
-│           ▼                                               │
-│  ┌────────────────────────────────────────────┐         │
-│  │ Gemini API generates answer                │         │
-│  └────────┬───────────────────────────────────┘         │
-│           │                                               │
-│           ▼                                               │
-│  ┌────────────────────────────────────────────┐         │
-│  │ AI Response: "Dạ, sản phẩm của bên em     │         │
-│  │ được bảo hành 12 tháng kể từ ngày mua.     │         │
-│  │ Anh/chị cần giữ hóa đơn để được hỗ trợ..." │         │
-│  └────────────────────────────────────────────┘         │
-└──────────────────────────────────────────────────────────┘
-```
-
-**Lợi ích:**
-- ✅ Độ chính xác cao: Trả lời dựa trên tài liệu thực
-- ✅ Giảm thiểu hallucination: Ít bịa đặt thông tin hơn
-- ✅ Có thể trích dẫn nguồn tài liệu
-- ✅ Dễ cập nhật: Upload tài liệu mới là xong
+#### Quản Lý Knowledge Base
+- 🏷️ Phân loại theo **category**, **tags**
+- 🔍 Tìm kiếm nâng cao: **full-text + vector search**
+- 📝 Version control cho tài liệu
+- 🔄 Bulk operations xử lý hàng loạt
 
 ---
 
-### 🔄 MCP (Model – Context – Process) - Framework Phân Tích Hệ Thống
+### 2. 💬 Module Chatbot Thông Minh
 
-> **📝 Định nghĩa:** MCP là **framework phân tích hệ thống**, giúp mô tả rõ ràng phạm vi và hoạt động của dự án. Đây KHÔNG phải là công nghệ AI như RAG, mà là phương pháp tổ chức và phân tích hệ thống.
+#### RAG-Powered Conversations
 
-**Sự khác biệt:**
-- **RAG** = Công nghệ AI thực tế (Retrieval-Augmented Generation)
-- **MCP** = Framework phân tích và tổ chức hệ thống
-
-**Áp dụng MCP trong dự án:**
-
+**Luồng xử lý:**
 ```
-┌─────────────────────────────────────────────────────────┐
-│  1️⃣ MODEL (M – Mô hình hệ thống)                       │
-│                                                          │
-│  Hệ thống AI Agent for Business gồm các thành phần:    │
-│                                                          │
-│  🤖 Chatbot AI                                          │
-│     • Tư vấn khách hàng 24/7                           │
-│     • Ghi nhận đơn hàng từ chat                        │
-│     • Tích hợp đa kênh (Website, Zalo OA, Zalo Personal)│
-│                                                          │
-│  📊 CRM Mini                                            │
-│     • Quản lý khách hàng                               │
-│     • Quản lý sản phẩm                                 │
-│     • Quản lý đơn hàng                                 │
-│     • Báo cáo doanh thu                                │
-│                                                          │
-│  🧠 AI Phân tích & Đề xuất                              │
-│     • Phân tích RFM khách hàng                         │
-│     • Đề xuất chiến lược marketing                     │
-│     • Dự đoán xu hướng nhập hàng                       │
-│     • Gợi ý chương trình khuyến mãi                    │
-│                                                          │
-│  📚 Quản lý tài liệu (RAG)                              │
-│     • Upload tài liệu PDF/DOCX/TXT                     │
-│     • Vector hóa và lưu trữ                            │
-│     • Truy xuất thông tin chính xác                    │
-└─────────────────────────────────────────────────────────┘
-                          ↓
-┌─────────────────────────────────────────────────────────┐
-│  2️⃣ CONTEXT (C – Ngữ cảnh)                             │
-│                                                          │
-│  📌 Bối cảnh thực tế:                                   │
-│     Doanh nghiệp nhỏ tại Việt Nam không có công cụ     │
-│     quản lý khách hàng và CSKH hiệu quả                │
-│                                                          │
-│  ⚠️ Vấn đề cần giải quyết:                              │
-│     • Chi phí CSKH cao (thuê nhân viên)                │
-│     • Thiếu nhân sự chuyên môn                         │
-│     • Thất thoát dữ liệu khách hàng                    │
-│     • Khó phân tích & đưa ra chiến lược kinh doanh     │
-│     • Không có insight về hành vi khách hàng           │
-│                                                          │
-│  ✅ Giải pháp:                                          │
-│     AI Agent hỗ trợ tự động:                           │
-│     → CSKH: Chatbot trả lời 24/7                       │
-│     → Quản lý: CRM tập trung tất cả dữ liệu            │
-│     → Phân tích: AI đưa ra insights & đề xuất          │
-│                                                          │
-│  🎯 Yêu cầu:                                            │
-│     • Giá thành hợp lý cho DN nhỏ                      │
-│     • Dễ sử dụng, không cần kỹ năng kỹ thuật          │
-│     • Tích hợp đa kênh (Website, Zalo)                 │
-│     • Hỗ trợ tiếng Việt hoàn toàn                      │
-└─────────────────────────────────────────────────────────┘
-                          ↓
-┌─────────────────────────────────────────────────────────┐
-│  3️⃣ PROCESS (P – Quy trình hoạt động)                  │
-│                                                          │
-│  📱 Quy trình End-to-End:                               │
-│                                                          │
-│  BƯỚC 1: Tương tác khách hàng                          │
-│  ┌──────────────────────────────────────────────┐     │
-│  │ Khách hàng chat qua:                          │     │
-│  │ • Website Widget                              │     │
-│  │ • Zalo Official Account (OA)                  │     │
-│  │ • Zalo Personal Account                       │     │
-│  └──────────────────────────────────────────────┘     │
-│                    ↓                                     │
-│  BƯỚC 2: AI xử lý & trả lời                            │
-│  ┌──────────────────────────────────────────────┐     │
-│  │ • Chatbot nhận tin nhắn                       │     │
-│  │ • Nếu cần, truy xuất tài liệu (RAG)          │     │
-│  │ • AI trả lời dựa trên dữ liệu shop thực tế    │     │
-│  └──────────────────────────────────────────────┘     │
-│                    ↓                                     │
-│  BƯỚC 3: Ghi nhận dữ liệu                              │
-│  ┌──────────────────────────────────────────────┐     │
-│  │ • Lưu đơn hàng vào CRM                        │     │
-│  │ • Lưu thông tin khách hàng                    │     │
-│  │ • Ghi nhận lịch sử tương tác                  │     │
-│  └──────────────────────────────────────────────┘     │
-│                    ↓                                     │
-│  BƯỚC 4: Dashboard & Quản lý                           │
-│  ┌──────────────────────────────────────────────┐     │
-│  │ • Doanh nghiệp đăng nhập Dashboard           │     │
-│  │ • Xem báo cáo doanh thu, đơn hàng            │     │
-│  │ • Quản lý khách hàng, sản phẩm               │     │
-│  └──────────────────────────────────────────────┘     │
-│                    ↓                                     │
-│  BƯỚC 5: AI Phân tích                                  │
-│  ┌──────────────────────────────────────────────┐     │
-│  │ • AI phân tích dữ liệu doanh thu              │     │
-│  │ • Phân tích hành vi khách hàng (RFM)          │     │
-│  │ • Dự đoán xu hướng                            │     │
-│  └──────────────────────────────────────────────┘     │
-│                    ↓                                     │
-│  BƯỚC 6: Đề xuất chiến lược                            │
-│  ┌──────────────────────────────────────────────┐     │
-│  │ AI đưa ra insights & recommendations:         │     │
-│  │ • Chiến lược marketing                        │     │
-│  │ • Kế hoạch nhập hàng                          │     │
-│  │ • Chương trình khuyến mãi                     │     │
-│  │ • Phân khúc khách hàng                        │     │
-│  └──────────────────────────────────────────────┘     │
-│                    ↓                                     │
-│  🔄 Vòng lặp cải tiến liên tục                         │
-│     Doanh nghiệp áp dụng → Thu thập data mới           │
-│     → AI học & cải thiện → Đề xuất tốt hơn            │
-└─────────────────────────────────────────────────────────┘
+1. User question → Spring Boot → Vector search → Tìm documents liên quan
+2. Spring Boot → Python Service (gửi question + context)
+3. Python Service → Gemini API → Generated response
+4. Python Service → Spring Boot → React → User
 ```
 
-**Tóm tắt MCP:**
-- **MODEL**: Mô tả CÁI GÌ hệ thống làm (Chatbot, CRM, AI Analytics, RAG)
-- **CONTEXT**: Giải thích TẠI SAO cần hệ thống này (vấn đề, giải pháp, yêu cầu)
-- **PROCESS**: Trình bày NHƯ THẾ NÀO hệ thống hoạt động (workflow end-to-end)
+#### Tính Năng Chat Nâng Cao
+- ⚡ **Real-time messaging** với WebSocket
+- 💾 **Conversation history** lưu trữ đầy đủ
+- 😊 **Sentiment analysis** tự động
+- ⚡ **Quick responses** với templates
 
 ---
 
-## ⚙️ Cài đặt
+### 3. 📊 Module Đề Xuất Chiến Lược
 
-### 📋 Yêu cầu hệ thống
+#### Phân Tích Dữ Liệu Kinh Doanh
+- 📈 Thu thập metrics tự động
+- 📉 Trend analysis theo thời gian
+- 🔄 Comparative analysis với industry benchmarks
 
-- **Java**: 17 hoặc cao hơn
-- **Node.js**: 18.x hoặc cao hơn (cho Next.js)
-- **Next.js**: 14.x
-- **MySQL**: 8.0 hoặc cao hơn
-- **Docker**: 24.x hoặc cao hơn (khuyến nghị)
-- **RAM**: Tối thiểu 4GB (khuyến nghị 8GB)
+#### AI Strategic Insights
+- 🎯 **SWOT analysis** tự động
+- 🔍 **Market opportunity identification**
+- ⚠️ **Risk assessment** và mitigation suggestions
 
-### 🚀 Cài đặt Local Development
+#### Báo Cáo Thông Minh
+- 📅 **Automated reporting** định kỳ
+- 📊 **Custom report generation**
+- 📉 **Data visualization** interactive
 
-#### **1. Clone repository**
+---
+
+### 4. ⚙️ Module Quản Trị Hệ Thống
+
+#### User & Role Management
+- 👥 **Role-based access control (RBAC)**
+- 📝 **Activity logging** và audit trails
+- 🔐 **Session management** bảo mật
+
+#### System Configuration
+- 🤖 AI model settings linh hoạt
+- 🔑 API keys management an toàn
+- ⚡ Performance tuning parameters
+
+---
+
+## 🔄 Luồng Hoạt Động
+
+### A. Luồng Upload & Xử Lý Tài Liệu
+
+```mermaid
+sequenceDiagram
+    participant U as User
+    participant R as React
+    participant S as Spring Boot
+    participant P as Python Service
+    participant D as MySQL
+
+    U->>R: Upload file
+    R->>S: POST /api/documents/upload
+    S->>D: Lưu metadata document
+    S->>P: Gửi file để xử lý
+    P->>P: Text extraction & chunking
+    P->>P: Generate embeddings
+    P->>D: Lưu vectors
+    P->>S: Cập nhật status
+    S->>R: Upload thành công
+    R->>U: Hiển thị kết quả
+```
+
+---
+
+### B. Luồng Xử Lý Câu Hỏi Người Dùng
+
+```mermaid
+sequenceDiagram
+    participant U as User
+    participant R as React
+    participant S as Spring Boot
+    participant P as Python Service
+    participant G as Gemini API
+    participant D as MySQL
+
+    U->>R: Gửi message
+    R->>S: WebSocket message
+    S->>D: Vector search → relevant docs
+    S->>P: Gửi question + context
+    P->>P: Build optimized prompt
+    P->>G: Gọi Gemini API
+    G->>P: Trả response
+    P->>S: Trả kết quả
+    S->>D: Lưu message & response
+    S->>R: Gửi response via WebSocket
+    R->>U: Hiển thị kết quả
+```
+
+---
+
+### C. Luồng Phân Tích Chiến Lược
+
+```mermaid
+sequenceDiagram
+    participant U as User
+    participant R as React
+    participant S as Spring Boot
+    participant P as Python Service
+    participant G as Gemini API
+    participant D as MySQL
+
+    U->>R: Yêu cầu phân tích chiến lược
+    R->>S: POST /api/strategic/analyze
+    S->>D: Thu thập business metrics
+    S->>P: Gửi data + analysis request
+    P->>P: Format data & build strategic prompt
+    P->>G: Gọi Gemini API
+    G->>P: Trả strategic insights
+    P->>S: Trả kết quả phân tích
+    S->>D: Lưu strategic insights
+    S->>R: Trả kết quả
+    R->>U: Hiển thị báo cáo
+```
+
+---
+
+## 💻 Công Nghệ Sử Dụng
+
+### Backend Stack
+- ☕ **Java 17** + **Spring Boot 3.2**
+- 🔐 **Spring Security** + JWT Authentication
+- 🗃️ **Spring Data JPA** + Hibernate
+- 🐬 **MySQL 8.0** với vector extensions
+- 🔄 **Redis** cho caching & session management
+- 🔌 **WebSocket + STOMP** real-time communication
+
+### AI Service Stack
+- 🐍 **Python 3.11** + **FastAPI**
+- 🤖 **Google Generative AI (Gemini API)**
+- 🧠 **Sentence Transformers** cho embeddings
+- 🐬 **MySQL Connector Python**
+- ⚡ **Uvicorn** ASGI server
+
+### Frontend Stack
+- ⚛️ **Next.js 14** (App Router) + **TypeScript**
+- 🔄 **Redux Toolkit** / **Zustand** state management
+- 🎨 **Tailwind CSS** styling
+- 🌐 **Axios** / **Fetch API** HTTP client
+- ⚡ **Server Components** & **Client Components**
+- 🔌 **WebSocket Client** real-time updates
+- 📊 **Chart.js** / **Recharts** data visualization
+- 🖼️ **Next.js Image Optimization**
+
+### DevOps & Deployment
+- 🐳 **Docker** + **Docker Compose**
+- 📦 **Maven** build automation
+- 🔧 **Git** version control
+- 🚀 **CI/CD** ready
+
+---
+
+## 🚀 Cài Đặt & Chạy Dự Án
+
+### Yêu Cầu Hệ Thống
+
+- 🐳 Docker & Docker Compose
+- ☕ Java 17+
+- 🐍 Python 3.11+
+- 📦 Node.js 18+
+- 🔧 Maven 3.8+
+
+### Cài Đặt Nhanh
+
+#### 1️⃣ Clone Repository
 
 ```bash
-git clone https://github.com/yourusername/AI-Agent-for-Business.git
+git clone https://github.com/vanhoangtvu/AI-Agent-for-Business.git
 cd AI-Agent-for-Business
 ```
 
-#### **2. Setup Backend (Spring Boot)**
+#### 2️⃣ Cấu Hình Environment Variables
+
+Tạo file `.env` ở thư mục root:
 
 ```bash
-cd backend
+# Database Configuration
+MYSQL_ROOT_PASSWORD=your_root_password
+MYSQL_DATABASE=ai_agent_db
+MYSQL_USER=ai_agent_user
+MYSQL_PASSWORD=your_password
 
-# Cấu hình database trong application.properties
-cp src/main/resources/application.properties.example src/main/resources/application.properties
+# Redis Configuration
+REDIS_PASSWORD=your_redis_password
 
-# Chỉnh sửa application.properties:
-# spring.datasource.url=jdbc:mysql://localhost:3306/ai_agent_db
-# spring.datasource.username=your_username
-# spring.datasource.password=your_password
-# gemini.api.key=your_gemini_api_key
+# JWT Configuration
+JWT_SECRET=your_jwt_secret_key_here
+JWT_EXPIRATION=86400000
 
-# Build và chạy
-./mvnw clean install
-./mvnw spring-boot:run
+# Gemini API Configuration
+GEMINI_API_KEY=your_gemini_api_key_here
+
+# Backend Configuration
+SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/ai_agent_db
+SPRING_REDIS_HOST=redis
+SPRING_REDIS_PORT=6379
+
+# AI Service Configuration
+PYTHON_SERVICE_URL=http://python-service:8000
 ```
 
-Backend sẽ chạy tại `http://localhost:8088`
-
-#### **3. Setup Frontend (Next.js 14)**
+#### 3️⃣ Chạy với Docker Compose
 
 ```bash
-cd frontend
-
-# Cài đặt dependencies
-npm install
-
-# Cấu hình environment
-cp .env.example .env.local
-
-# Chỉnh sửa .env.local:
-# NEXT_PUBLIC_API_URL=http://localhost:8088/api/v1
-# NEXT_PUBLIC_SOCKET_URL=ws://localhost:8088
-# NEXTAUTH_SECRET=your_nextauth_secret_key
-# NEXTAUTH_URL=http://localhost:3008
-
-# Chạy development server
-npm run dev
-```
-
-Frontend (Next.js) sẽ chạy tại `http://localhost:3008`
-
-#### **4. Setup Database**
-
-```bash
-# Tạo database
-mysql -u root -p
-
-CREATE DATABASE ai_agent_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-exit;
-
-# Import schema (nếu có)
-mysql -u root -p ai_agent_db < database/schema.sql
-```
-
-#### **5. Setup Vector Database (Optional - cho RAG)**
-
-**Sử dụng pgvector:**
-
-```bash
-# Cài đặt PostgreSQL với pgvector extension
-docker run --name pgvector \
-  -e POSTGRES_PASSWORD=postgres \
-  -p 5432:5432 \
-  -d ankane/pgvector
-
-# Tạo database và enable extension
-psql -h localhost -U postgres
-CREATE DATABASE vector_db;
-\c vector_db
-CREATE EXTENSION vector;
-```
-
-**Hoặc sử dụng Pinecone (Cloud):**
-
-```bash
-# Đăng ký tài khoản tại https://www.pinecone.io/
-# Lấy API key và cấu hình trong application.properties
-pinecone.api.key=your_pinecone_key
-pinecone.environment=us-west1-gcp
-```
-
-### 🐳 Triển khai với Docker
-
-```bash
-# Build và chạy tất cả services
+# Build và khởi động tất cả services
 docker-compose up -d
 
 # Kiểm tra logs
@@ -753,1245 +341,405 @@ docker-compose logs -f
 docker-compose down
 ```
 
-**docker-compose.yml:**
+#### 4️⃣ Chạy Từng Service Riêng Lẻ
 
-```yaml
-version: '3.8'
-
-services:
-  mysql:
-    image: mysql:8.0
-    environment:
-      MYSQL_ROOT_PASSWORD: root123
-      MYSQL_DATABASE: ai_agent_db
-    ports:
-      - "3306:3306"
-    volumes:
-      - mysql_data:/var/lib/mysql
-
-  backend:
-    build: ./backend
-    ports:
-      - "8088:8088"
-    environment:
-      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/ai_agent_db
-      GEMINI_API_KEY: ${GEMINI_API_KEY}
-    depends_on:
-      - mysql
-
-  frontend:
-    build: 
-      context: ./frontend
-      dockerfile: Dockerfile
-    ports:
-      - "3008:3008"
-    environment:
-      NEXT_PUBLIC_API_URL: http://backend:8088/api/v1
-      NEXT_PUBLIC_SOCKET_URL: ws://backend:8088
-      NEXTAUTH_SECRET: ${NEXTAUTH_SECRET}
-      NEXTAUTH_URL: http://localhost:3008
-    depends_on:
-      - backend
-
-  redis:
-    image: redis:7-alpine
-    ports:
-      - "6379:6379"
-
-volumes:
-  mysql_data:
+**Backend (Spring Boot):**
+```bash
+cd backend/SpringService
+mvn clean install
+mvn spring-boot:run
 ```
+
+**AI Service (Python FastAPI):**
+```bash
+cd backend/pythonService
+pip install -r requirements.txt
+uvicorn main:app --reload --host 0.0.0.0 --port 8000
+```
+
+**Frontend (Next.js):**
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+### Truy Cập Ứng Dụng
+
+- 🌐 **Frontend**: http://localhost:3000
+- ⚙️ **Backend API**: http://localhost:8080
+- 🤖 **AI Service API**: http://localhost:8000
+- 📚 **API Docs (Swagger)**: http://localhost:8080/swagger-ui.html
+- 📖 **FastAPI Docs**: http://localhost:8000/docs
 
 ---
 
-## 👥 Phân quyền và vai trò người dùng
-
-Hệ thống sử dụng **Role-Based Access Control (RBAC)** với 3 vai trò chính:
-
-### 🔐 1. ADMIN (Quản trị viên hệ thống)
-
-**Quyền truy cập:**
-- ✅ **Full access** toàn bộ hệ thống
-- ✅ Quản lý tất cả doanh nghiệp (businesses)
-- ✅ Xem và sửa tất cả dữ liệu
-- ✅ Quản lý người dùng hệ thống
-- ✅ Cấu hình hệ thống global
-- ✅ Xem logs và monitoring
-- ✅ Quản lý subscription và billing
-
-**Giao diện:**
-```
-┌─────────────────────────────────────────────────────────┐
-│  🎛️ ADMIN DASHBOARD                                     │
-├─────────────────────────────────────────────────────────┤
-│  📊 Tổng quan hệ thống                                  │
-│     • Tổng số doanh nghiệp: 150                         │
-│     • Tổng số khách hàng: 15,000                        │
-│     • Messages hôm nay: 25,000                          │
-│                                                          │
-│  🏢 Quản lý doanh nghiệp                                │
-│     • Danh sách businesses                              │
-│     • Duyệt đăng ký mới                                 │
-│     • Suspend/Active account                            │
-│                                                          │
-│  💳 Billing & Subscription                              │
-│     • Quản lý gói dịch vụ                               │
-│     • Doanh thu                                         │
-│     • Gia hạn/Nâng cấp                                  │
-│                                                          │
-│  ⚙️ Cấu hình hệ thống                                   │
-│     • AI Model settings                                 │
-│     • Rate limiting                                     │
-│     • Email/SMS gateway                                 │
-│                                                          │
-│  📈 Analytics & Reports                                 │
-│     • System performance                                │
-│     • Error logs                                        │
-│     • Usage statistics                                  │
-└─────────────────────────────────────────────────────────┘
-```
-
-**API Endpoints (Admin only):**
-```
-GET    /admin/businesses           # Danh sách doanh nghiệp
-GET    /admin/businesses/{id}      # Chi tiết doanh nghiệp
-PUT    /admin/businesses/{id}      # Cập nhật doanh nghiệp
-DELETE /admin/businesses/{id}      # Xóa doanh nghiệp
-GET    /admin/stats                # Thống kê hệ thống
-GET    /admin/logs                 # System logs
-POST   /admin/broadcast            # Gửi thông báo toàn hệ thống
-```
-
----
-
-### 🏢 2. BUSINESS (Doanh nghiệp)
-
-**Quyền truy cập:**
-- ✅ Quản lý **dữ liệu riêng** của doanh nghiệp mình
-- ✅ Quản lý khách hàng của mình
-- ✅ Quản lý sản phẩm, đơn hàng
-- ✅ Cấu hình chatbot và AI
-- ✅ Tích hợp Zalo (OA + Personal)
-- ✅ Upload tài liệu RAG
-- ✅ Xem analytics của doanh nghiệp mình
-- ❌ **KHÔNG** thấy dữ liệu doanh nghiệp khác
-- ❌ **KHÔNG** có quyền admin
-
-**Giao diện:**
-```
-┌─────────────────────────────────────────────────────────┐
-│  🏢 BUSINESS DASHBOARD - Cửa hàng ABC                   │
-├─────────────────────────────────────────────────────────┤
-│  📊 Tổng quan kinh doanh                                │
-│     • Doanh thu tháng này: 150,000,000đ                 │
-│     • Đơn hàng mới: 45                                  │
-│     • Khách hàng mới: 23                                │
-│     • Tin nhắn chưa đọc: 12                             │
-│                                                          │
-│  💬 Quản lý hội thoại                                   │
-│     • Website Widget: 15 cuộc trò chuyện               │
-│     • Zalo OA: 8 cuộc trò chuyện                       │
-│     • Zalo Personal: 20 cuộc trò chuyện                │
-│                                                          │
-│  👥 CRM - Quản lý khách hàng                            │
-│     • Danh sách khách hàng                              │
-│     • Phân loại (VIP, Regular, Potential)               │
-│     • Lịch sử mua hàng                                  │
-│                                                          │
-│  📦 Quản lý sản phẩm & đơn hàng                         │
-│     • Danh mục sản phẩm                                 │
-│     • Tồn kho                                           │
-│     • Đơn hàng (pending, processing, completed)         │
-│                                                          │
-│  🤖 Cấu hình AI Chatbot                                 │
-│     • Tích hợp kênh (Website, Zalo OA, Zalo Personal)  │
-│     • Upload tài liệu RAG                               │
-│     • Chế độ AI (Auto/Suggestion/Notification)          │
-│     • Training & Fine-tuning                            │
-│                                                          │
-│  📊 AI Insights & Analytics                             │
-│     • Phân tích khách hàng (RFM)                        │
-│     • Sản phẩm bán chạy                                 │
-│     • Dự đoán doanh thu                                 │
-│     • Đề xuất chiến lược                                │
-│                                                          │
-│  ⚙️ Cài đặt                                             │
-│     • Thông tin doanh nghiệp                            │
-│     • Quản lý nhân viên                                 │
-│     • Thanh toán & gói dịch vụ                          │
-└─────────────────────────────────────────────────────────┘
-```
-
-**API Endpoints (Business):**
-```
-# Khách hàng
-GET    /business/customers         # Khách hàng của mình
-POST   /business/customers         # Thêm khách hàng
-PUT    /business/customers/{id}    # Cập nhật khách hàng
-DELETE /business/customers/{id}    # Xóa khách hàng
-
-# Sản phẩm
-GET    /business/products          # Sản phẩm của mình
-POST   /business/products          # Thêm sản phẩm
-PUT    /business/products/{id}     # Cập nhật sản phẩm
-DELETE /business/products/{id}     # Xóa sản phẩm
-
-# Đơn hàng
-GET    /business/orders            # Đơn hàng của mình
-POST   /business/orders            # Tạo đơn hàng
-PUT    /business/orders/{id}       # Cập nhật đơn hàng
-
-# Chatbot & AI
-GET    /business/conversations     # Hội thoại của mình
-POST   /business/chatbot/config    # Cấu hình chatbot
-POST   /business/documents/upload  # Upload tài liệu RAG
-
-# Zalo Integration
-POST   /business/zalo/oa/config    # Config Zalo OA
-POST   /business/zalo/personal/qr  # Generate QR Zalo Personal
-GET    /business/zalo/conversations # Zalo conversations
-
-# Analytics
-GET    /business/analytics/overview    # Tổng quan
-GET    /business/analytics/insights    # AI Insights
-```
-
----
-
-### 👤 3. CUSTOMER (Khách hàng)
-
-**Quyền truy cập:**
-- ✅ Chat với chatbot (Website, Zalo)
-- ✅ Xem lịch sử chat của mình
-- ✅ Xem đơn hàng của mình
-- ✅ Cập nhật thông tin cá nhân
-- ❌ **KHÔNG** thấy thông tin khách hàng khác
-- ❌ **KHÔNG** vào Dashboard doanh nghiệp
-- ❌ **KHÔNG** có quyền quản lý
-
-**Giao diện:**
-```
-┌─────────────────────────────────────────────────────────┐
-│  👤 CUSTOMER PORTAL - Nguyễn Văn A                      │
-├─────────────────────────────────────────────────────────┤
-│  💬 Trò chuyện với shop                                 │
-│     [Chat widget hiển thị ở đây]                        │
-│                                                          │
-│  📦 Đơn hàng của tôi                                    │
-│     • Đơn hàng #12345 - Đang giao                       │
-│     • Đơn hàng #12344 - Hoàn thành                      │
-│     • Đơn hàng #12343 - Đã hủy                          │
-│                                                          │
-│  👤 Thông tin cá nhân                                   │
-│     • Họ tên: Nguyễn Văn A                              │
-│     • Email: nguyenvana@email.com                       │
-│     • SĐT: 0901234567                                   │
-│     • Địa chỉ: ...                                      │
-│                                                          │
-│  🔔 Thông báo                                            │
-│     • Đơn hàng #12345 đang được giao                    │
-│     • Khuyến mãi mới: Giảm 20%                          │
-└─────────────────────────────────────────────────────────┘
-```
-
-**API Endpoints (Customer):**
-```
-# Chat
-POST   /customer/chat/send         # Gửi tin nhắn
-GET    /customer/chat/history      # Lịch sử chat của mình
-
-# Đơn hàng
-GET    /customer/orders            # Đơn hàng của mình
-GET    /customer/orders/{id}       # Chi tiết đơn hàng
-POST   /customer/orders/{id}/cancel # Hủy đơn hàng
-
-# Profile
-GET    /customer/profile           # Thông tin của mình
-PUT    /customer/profile           # Cập nhật thông tin
-```
-
----
-
-## 🔐 Bảng phân quyền chi tiết
-
-| Chức năng | 🎛️ Admin | 🏢 Business | 👤 Customer |
-|-----------|----------|-------------|-------------|
-| **Quản lý hệ thống** | ✅ Full | ❌ | ❌ |
-| **Quản lý doanh nghiệp khác** | ✅ | ❌ | ❌ |
-| **Quản lý khách hàng (của mình)** | ✅ | ✅ | ❌ |
-| **Quản lý sản phẩm** | ✅ | ✅ | ❌ |
-| **Quản lý đơn hàng (của mình)** | ✅ | ✅ | ✅ (chỉ xem) |
-| **Cấu hình AI Chatbot** | ✅ | ✅ | ❌ |
-| **Upload tài liệu RAG** | ✅ | ✅ | ❌ |
-| **Tích hợp Zalo** | ✅ | ✅ | ❌ |
-| **Xem Analytics (của mình)** | ✅ | ✅ | ❌ |
-| **Xem Analytics (toàn hệ thống)** | ✅ | ❌ | ❌ |
-| **Chat với bot** | ✅ | ✅ | ✅ |
-| **Xem hội thoại khách hàng** | ✅ | ✅ | ❌ |
-| **Billing & Subscription** | ✅ | ✅ (của mình) | ❌ |
-| **System logs** | ✅ | ❌ | ❌ |
-
----
-
-## 🔑 Authentication Flow
+## 📁 Cấu Trúc Thư Mục
 
 ```
-┌──────────────────────────────────────────────────────┐
-│  1. User truy cập hệ thống                            │
-│     → http://localhost:3008                           │
-└──────────────────┬───────────────────────────────────┘
-                   │
-┌──────────────────▼───────────────────────────────────┐
-│  2. Login/Register                                    │
-│     • Email + Password                                │
-│     • Chọn vai trò: Business / Customer              │
-│     • (Admin tạo bởi system)                          │
-└──────────────────┬───────────────────────────────────┘
-                   │
-┌──────────────────▼───────────────────────────────────┐
-│  3. Backend xác thực                                  │
-│     • Spring Security + JWT                           │
-│     • Kiểm tra credentials                            │
-│     • Tạo JWT token với role                          │
-└──────────────────┬───────────────────────────────────┘
-                   │
-┌──────────────────▼───────────────────────────────────┐
-│  4. Response JWT Token                                │
-│     {                                                 │
-│       "token": "eyJhbGc...",                          │
-│       "user": {                                       │
-│         "id": 123,                                    │
-│         "email": "admin@business.com",                │
-│         "role": "BUSINESS",  // ADMIN/BUSINESS/CUSTOMER│
-│         "businessId": 456                             │
-│       }                                               │
-│     }                                                 │
-└──────────────────┬───────────────────────────────────┘
-                   │
-┌──────────────────▼───────────────────────────────────┐
-│  5. Frontend route theo role                          │
-│     • ADMIN    → /admin/dashboard                     │
-│     • BUSINESS → /business/dashboard                  │
-│     • CUSTOMER → /customer/portal                     │
-└───────────────────────────────────────────────────────┘
+AI-Agent-for-Business/
+│
+├── backend/
+│   ├── SpringService/              # Spring Boot Backend
+│   │   ├── src/
+│   │   │   ├── main/
+│   │   │   │   ├── java/
+│   │   │   │   │   └── com/aiagent/
+│   │   │   │   │       ├── config/          # Configuration classes
+│   │   │   │   │       ├── controller/      # REST Controllers
+│   │   │   │   │       ├── service/         # Business Logic
+│   │   │   │   │       ├── repository/      # Data Access Layer
+│   │   │   │   │       ├── model/           # Entity Models
+│   │   │   │   │       ├── dto/             # Data Transfer Objects
+│   │   │   │   │       ├── security/        # Security & JWT
+│   │   │   │   │       └── websocket/       # WebSocket Config
+│   │   │   │   └── resources/
+│   │   │   │       ├── application.yml
+│   │   │   │       └── application-prod.yml
+│   │   │   └── test/
+│   │   ├── pom.xml
+│   │   └── Dockerfile
+│   │
+│   └── pythonService/              # Python AI Service
+│       ├── app/
+│       │   ├── __init__.py
+│       │   ├── main.py             # FastAPI application
+│       │   ├── config.py           # Configuration
+│       │   ├── models/             # Data models
+│       │   ├── services/
+│       │   │   ├── rag_service.py       # RAG implementation
+│       │   │   ├── gemini_service.py    # Gemini API integration
+│       │   │   ├── embedding_service.py # Vector embeddings
+│       │   │   └── document_processor.py # Document processing
+│       │   ├── routers/            # API routes
+│       │   └── utils/              # Utility functions
+│       ├── requirements.txt
+│       └── Dockerfile
+│
+├── frontend/                       # Next.js Frontend
+│   ├── public/                    # Static assets
+│   │   ├── images/
+│   │   └── icons/
+│   ├── src/
+│   │   ├── app/                   # App Router (Next.js 14)
+│   │   │   ├── layout.tsx         # Root layout
+│   │   │   ├── page.tsx           # Home page
+│   │   │   ├── (auth)/            # Auth routes group
+│   │   │   │   ├── login/
+│   │   │   │   └── register/
+│   │   │   ├── dashboard/         # Dashboard routes
+│   │   │   ├── chat/              # Chat routes
+│   │   │   ├── documents/         # Document management
+│   │   │   ├── strategic/         # Strategic analysis
+│   │   │   └── api/               # API routes (optional)
+│   │   ├── components/            # React components
+│   │   │   ├── Chat/
+│   │   │   ├── Document/
+│   │   │   ├── Dashboard/
+│   │   │   ├── Strategic/
+│   │   │   └── Common/
+│   │   ├── lib/                   # Libraries & utilities
+│   │   │   ├── api/               # API clients
+│   │   │   ├── hooks/             # Custom hooks
+│   │   │   └── utils/             # Utility functions
+│   │   ├── store/                 # State management
+│   │   │   ├── slices/            # Redux slices
+│   │   │   └── store.ts           # Store configuration
+│   │   ├── types/                 # TypeScript types
+│   │   └── styles/                # Global styles
+│   │       └── globals.css
+│   ├── package.json
+│   ├── next.config.js
+│   ├── tsconfig.json
+│   ├── tailwind.config.js
+│   └── Dockerfile
+│
+├── docker-compose.yml
+├── .env.example
+├── .gitignore
+└── README.md
 ```
-
----
-
-## 🛡️ Bảo mật
-
-**1. JWT Token:**
-```json
-{
-  "sub": "user_email@domain.com",
-  "role": "BUSINESS",
-  "businessId": 123,
-  "permissions": ["read:customers", "write:products"],
-  "iat": 1735171200,
-  "exp": 1735257600
-}
-```
-
-**2. Route Protection (Next.js):**
-```typescript
-// middleware.ts
-export function middleware(request: NextRequest) {
-  const token = request.cookies.get('token');
-  const userRole = decodeToken(token).role;
-  
-  // Admin routes
-  if (request.url.includes('/admin') && userRole !== 'ADMIN') {
-    return NextResponse.redirect('/403');
-  }
-  
-  // Business routes
-  if (request.url.includes('/business') && userRole !== 'BUSINESS') {
-    return NextResponse.redirect('/403');
-  }
-  
-  // Customer routes
-  if (request.url.includes('/customer') && userRole !== 'CUSTOMER') {
-    return NextResponse.redirect('/403');
-  }
-}
-```
-
-**3. Backend Security (Spring Boot):**
-```java
-@PreAuthorize("hasRole('ADMIN')")
-public ResponseEntity<?> getAllBusinesses() { ... }
-
-@PreAuthorize("hasRole('BUSINESS')")
-public ResponseEntity<?> getMyCustomers(@AuthenticationPrincipal User user) {
-    // Chỉ trả về khách hàng của business này
-    return customerService.findByBusinessId(user.getBusinessId());
-}
-
-@PreAuthorize("hasRole('CUSTOMER')")
-public ResponseEntity<?> getMyOrders(@AuthenticationPrincipal User user) {
-    // Chỉ trả về đơn hàng của customer này
-    return orderService.findByCustomerId(user.getId());
-}
-```
-
----
-
-## 📖 Sử dụng
-
-### 🔐 Đăng nhập hệ thống
-
-1. Truy cập `http://localhost:3008`
-2. Chọn vai trò và đăng ký tài khoản
-3. Đăng nhập với email/password
-
-**Demo accounts:**
-
-**🎛️ Admin:**
-- Email: `admin@aiagent.system`
-- Password: `Admin@123456`
-- Dashboard: `/admin/dashboard`
-
-**🏢 Business (Doanh nghiệp):**
-- Email: `demo@business.com`
-- Password: `Business@123`
-- Dashboard: `/business/dashboard`
-
-**👤 Customer (Khách hàng):**
-- Email: `customer@example.com`
-- Password: `Customer@123`
-- Portal: `/customer/portal`
-
-### 🌐 Tích hợp Chatbot Widget vào Website
-
-```html
-<!-- Thêm đoạn code sau vào website của bạn (trước thẻ </body>) -->
-<script>
-  (function(w,d,s,o,f,js,fjs){
-    w['ChatbotWidget']=o;w[o]=w[o]||function(){(w[o].q=w[o].q||[]).push(arguments)};
-    js=d.createElement(s),fjs=d.getElementsByTagName(s)[0];
-    js.id=o;js.src=f;js.async=1;fjs.parentNode.insertBefore(js,fjs);
-  }(window,document,'script','chatbot','http://localhost:3008/widget.js'));
-  
-  chatbot('init', {
-    businessId: 'YOUR_BUSINESS_ID',
-    position: 'bottom-right',  // bottom-left, top-right, top-left
-    color: '#0084ff',           // Màu chủ đạo
-    title: 'Hỗ trợ khách hàng',
-    subtitle: 'Chúng tôi luôn sẵn sàng hỗ trợ bạn',
-    avatar: 'https://yourdomain.com/bot-avatar.png'
-  });
-</script>
-```
-
-**Tùy chỉnh nâng cao:**
-```javascript
-chatbot('init', {
-  businessId: 'YOUR_BUSINESS_ID',
-  position: 'bottom-right',
-  color: '#0084ff',
-  
-  // Tùy chỉnh hiển thị
-  title: 'AI Chatbot',
-  subtitle: 'Online',
-  welcomeMessage: 'Xin chào! Tôi có thể giúp gì cho bạn?',
-  
-  // Tùy chỉnh hành vi
-  autoOpen: false,           // Tự động mở chat
-  autoOpenDelay: 5000,       // Delay trước khi tự động mở (ms)
-  showNotification: true,    // Hiển thị thông báo
-  
-  // Custom styles
-  width: '400px',
-  height: '600px',
-  zIndex: 9999
-});
-```
-
-### 💬 Tích hợp Zalo OA
-
-**Bước 1: Đăng ký Zalo Official Account**
-1. Truy cập [https://oa.zalo.me](https://oa.zalo.me)
-2. Đăng ký Official Account cho doanh nghiệp
-3. Hoàn thành xác minh doanh nghiệp
-
-**Bước 2: Lấy thông tin API**
-1. Vào phần **Cài đặt** → **Quản lý ứng dụng**
-2. Tạo App mới hoặc sử dụng App có sẵn
-3. Lấy thông tin:
-   - OA ID
-   - App ID
-   - App Secret
-   - Access Token
-
-### 📤 Upload tài liệu cho RAG
-
-1. Đăng nhập Dashboard
-2. Vào mục **"Quản lý tài liệu"**
-3. Click **"Upload tài liệu"**
-4. Chọn file PDF/DOCX/TXT
-5. Chọn loại tài liệu (Chính sách, Hướng dẫn, FAQ...)
-6. Click **"Xử lý"** → Hệ thống tự động tạo embeddings
-
-### 📊 Xem báo cáo AI
-
-1. Vào mục **"AI Insights"**
-2. Chọn khoảng thời gian
-3. Xem các phân tích:
-   - Phân khúc khách hàng
-   - Sản phẩm bán chạy
-   - Dự đoán doanh thu
-   - Đề xuất chiến lược
-
-**Bước 3: Cấu hình Webhook**
-1. Vào Dashboard hệ thống → **Tích hợp Zalo OA**
-2. Nhập thông tin:
-   - OA ID
-   - App ID  
-   - App Secret
-   - Access Token
-3. Cấu hình Webhook URL tại Zalo:
-   - Callback URL: `https://yourdomain.com/api/v1/webhook/zalo`
-   - Secret Key: Tạo tự động trong Dashboard
-4. Test kết nối và lưu cấu hình
-
-**Bước 4: Bắt đầu sử dụng**
-- Khách hàng nhắn tin vào Zalo OA
-- Bot tự động trả lời dựa trên RAG
-- Theo dõi hội thoại trong Dashboard
-
-### 👤 Tích hợp Zalo Personal Account (Tài khoản cá nhân)
-
-> **⚠️ CẢNH BÁO QUAN TRỌNG:**  
-> - Tính năng này sử dụng **unofficial API** (không phải API chính thức từ Zalo)
-> - Có rủi ro **bị khóa tài khoản** nếu vi phạm điều khoản sử dụng Zalo
-> - **Không nên spam** hoặc gửi tin nhắn hàng loạt
-> - Chỉ nên dùng cho **test** hoặc **doanh nghiệp nhỏ** với lượng tin nhắn vừa phải
-> - Với doanh nghiệp chuyên nghiệp, khuyến nghị dùng **Zalo OA** để đảm bảo an toàn
-
-> **💡 Phù hợp cho:** Doanh nghiệp nhỏ, cửa hàng online chưa có Zalo OA, hoặc test tính năng trước khi đầu tư vào Zalo OA.
-
-**Bước 1: Đăng nhập qua QR Code**
-
-1. Vào Dashboard → **Tích hợp Zalo Personal**
-2. Click **"Đăng nhập bằng Zalo"**
-3. Hệ thống hiển thị **mã QR Code**
-4. Mở app Zalo trên điện thoại → Quét mã QR
-5. Xác nhận đăng nhập
-
-**Bước 2: Cấu hình AI Chatbot**
-
-```
-┌─────────────────────────────────────────────────────┐
-│  Cấu hình AI cho tài khoản Zalo                     │
-├─────────────────────────────────────────────────────┤
-│                                                      │
-│  ✅ Bật AI tự động trả lời                          │
-│  ⏰ Thời gian hoạt động: 24/7                       │
-│  🎯 Chế độ:                                         │
-│     ○ Tự động hoàn toàn                             │
-│     ● Gợi ý câu trả lời (cần xác nhận)             │
-│     ○ Chỉ thông báo (không tự động)                │
-│                                                      │
-│  📚 Sử dụng tài liệu RAG: ✅                        │
-│  🛒 Tự động ghi nhận đơn hàng: ✅                   │
-│  📊 Tự động phân loại khách hàng: ✅                │
-│                                                      │
-│  [Lưu cấu hình]                                     │
-└─────────────────────────────────────────────────────┘
-```
-
-**Bước 3: Quản lý và giám sát**
-
-- 📱 **Dashboard thống nhất**: Xem tất cả hội thoại từ tài khoản Zalo
-- 🔄 **Live preview**: Xem tin nhắn real-time
-- ✋ **Takeover**: Chuyển sang chế độ thủ công khi cần
-- 📊 **Thống kê**: Số tin nhắn, tỷ lệ trả lời tự động, độ hài lòng
-
-**Bước 4: Chế độ hoạt động**
-
-```
-┌──────────────────────────────────────────────────────┐
-│  Chế độ 1: TỰ ĐỘNG HOÀN TOÀN                        │
-│  • AI tự động trả lời TẤT CẢ tin nhắn               │
-│  • Không cần can thiệp                               │
-│  • Phù hợp: Ngoài giờ làm việc, lúc bận             │
-├──────────────────────────────────────────────────────┤
-│  Chế độ 2: GỢI Ý + XÁC NHẬN                         │
-│  • AI gợi ý câu trả lời                              │
-│  • Bạn xem và click "Gửi" hoặc chỉnh sửa           │
-│  • Phù hợp: Trong giờ làm việc                      │
-├──────────────────────────────────────────────────────┤
-│  Chế độ 3: CHỈ THÔNG BÁO                            │
-│  • AI KHÔNG tự động trả lời                          │
-│  • Chỉ phân tích và thông báo                       │
-│  • Phù hợp: Khi muốn tự trả lời                     │
-└──────────────────────────────────────────────────────┘
-```
-
-**Ví dụ luồng hoạt động:**
-
-```
-1. Khách hàng: "Shop ơi, áo thun size M còn không?"
-   
-2. AI phân tích → Tìm trong database
-   
-3. Dashboard thông báo: 🔔 Tin nhắn mới từ Nguyễn Văn A
-   
-4. AI gợi ý: 
-   "Dạ shop còn ạ. Áo thun size M có 3 màu:
-   - Trắng: 150k
-   - Đen: 150k  
-   - Xanh navy: 150k
-   Anh/chị muốn đặt màu nào ạ?"
-   
-5. [Chế độ tự động] → Gửi ngay
-   [Chế độ gợi ý] → Hiển thị nút "Gửi" hoặc "Chỉnh sửa"
-```
-
-**Tính năng bảo mật:**
-
-- 🔒 **Mã hóa end-to-end**: Session được mã hóa
-- 🔐 **Token refresh**: Tự động làm mới phiên đăng nhập
-- 🚪 **Logout từ xa**: Đăng xuất từ Dashboard bất cứ lúc nào
-- 📱 **Thông báo**: Nhận thông báo khi có người đăng nhập
-- ⏰ **Session timeout**: Tự động đăng xuất sau 7 ngày không dùng
-
-**Lợi ích:**
-
-- ✅ Không cần đăng ký Zalo OA (tiết kiệm chi phí)
-- ✅ Dùng ngay tài khoản Zalo hiện có
-- ✅ Khách hàng quen thuộc với tài khoản
-- ✅ Linh hoạt chuyển đổi chế độ tự động/thủ công
-- ✅ AI học từ cách bạn trả lời
 
 ---
 
 ## 📚 API Documentation
 
-### Base URL
-```
-http://localhost:8088/api/v1
-```
+### Backend REST API Endpoints
 
-### Authentication
-
-Tất cả API (trừ login/register) yêu cầu JWT token trong header:
-
+#### Authentication
 ```
-Authorization: Bearer <your_jwt_token>
+POST   /api/auth/register          # Đăng ký tài khoản
+POST   /api/auth/login             # Đăng nhập
+POST   /api/auth/refresh           # Refresh token
+POST   /api/auth/logout            # Đăng xuất
 ```
 
-**JWT Token chứa thông tin vai trò:**
-- `role`: ADMIN / BUSINESS / CUSTOMER
-- `businessId`: ID của doanh nghiệp (với BUSINESS role)
-- `permissions`: Danh sách quyền cụ thể
-
-**Prefix routes theo role:**
-- `/admin/*` - Chỉ ADMIN
-- `/business/*` - Chỉ BUSINESS  
-- `/customer/*` - Chỉ CUSTOMER
-- `/public/*` - Không cần đăng nhập
-
-### Endpoints
-
-#### **Authentication**
-
-**Register (Business):**
-```http
-POST /auth/register/business
-Content-Type: application/json
-
-{
-  "businessName": "Cửa hàng ABC",
-  "email": "admin@abc.com",
-  "password": "Password123",
-  "phone": "0901234567",
-  "address": "123 Đường ABC, Quận 1, TP.HCM"
-}
-
-Response: 201 Created
-{
-  "id": 1,
-  "businessName": "Cửa hàng ABC",
-  "email": "admin@abc.com",
-  "role": "BUSINESS",
-  "businessId": 1,
-  "token": "eyJhbGciOiJIUzI1NiIs..."
-}
+#### Document Management
+```
+POST   /api/documents/upload       # Upload tài liệu
+GET    /api/documents              # Lấy danh sách tài liệu
+GET    /api/documents/{id}         # Lấy chi tiết tài liệu
+PUT    /api/documents/{id}         # Cập nhật tài liệu
+DELETE /api/documents/{id}         # Xóa tài liệu
+POST   /api/documents/search       # Tìm kiếm tài liệu
 ```
 
-**Register (Customer):**
-```http
-POST /auth/register/customer
-Content-Type: application/json
-
-{
-  "name": "Nguyễn Văn A",
-  "email": "customer@example.com",
-  "password": "Password123",
-  "phone": "0912345678"
-}
-
-Response: 201 Created
-{
-  "id": 101,
-  "name": "Nguyễn Văn A",
-  "email": "customer@example.com",
-  "role": "CUSTOMER",
-  "token": "eyJhbGciOiJIUzI1NiIs..."
-}
+#### Chatbot
+```
+POST   /api/chat/message           # Gửi message
+GET    /api/chat/history           # Lấy lịch sử chat
+GET    /api/chat/conversations     # Lấy danh sách conversations
+DELETE /api/chat/{id}              # Xóa conversation
+WS     /ws/chat                    # WebSocket endpoint
 ```
 
-**Login:**
-```http
-POST /auth/login
-Content-Type: application/json
-
-{
-  "email": "admin@abc.com",
-  "password": "Password123"
-}
-
-Response: 200 OK
-{
-  "token": "eyJhbGciOiJIUzI1NiIs...",
-  "expiresIn": 86400,
-  "user": {
-    "id": 1,
-    "email": "admin@abc.com",
-    "role": "BUSINESS",
-    "businessId": 1,
-    "businessName": "Cửa hàng ABC"
-  }
-}
+#### Strategic Analysis
+```
+POST   /api/strategic/analyze      # Phân tích chiến lược
+GET    /api/strategic/reports      # Lấy danh sách báo cáo
+GET    /api/strategic/reports/{id} # Lấy chi tiết báo cáo
+POST   /api/strategic/metrics      # Cập nhật metrics
+GET    /api/strategic/insights     # Lấy insights
 ```
 
-#### **Chatbot**
-
-```http
-POST /chatbot/message
-Authorization: Bearer <token>
-Content-Type: application/json
-
-{
-  "message": "Tôi muốn mua iPhone 15",
-  "userId": "customer_123",
-  "channel": "website"  // hoặc "zalo"
-}
-
-Response: 200 OK
-{
-  "reply": "Dạ, em có thông tin sản phẩm iPhone 15 như sau...",
-  "intent": "product_inquiry",
-  "entities": ["iPhone 15"],
-  "actions": ["show_product"],
-  "products": [
-    {
-      "id": 1,
-      "name": "iPhone 15 Pro Max 256GB",
-      "price": 29990000,
-      "stock": 50
-    }
-  ]
-}
+#### User Management
 ```
-
-#### **Zalo OA Webhook**
-
-```http
-POST /webhook/zalo/oa
-Content-Type: application/json
-
-{
-  "event_name": "user_send_text",
-  "timestamp": 1735171200000,
-  "message": {
-    "text": "Tôi muốn mua iPhone 15",
-    "msg_id": "abc123"
-  },
-  "sender": {
-    "id": "1234567890"
-  },
-  "recipient": {
-    "id": "YOUR_OA_ID"
-  }
-}
-
-Response: 200 OK
-{
-  "status": "success"
-}
+GET    /api/users                  # Lấy danh sách users (Admin)
+GET    /api/users/{id}             # Lấy thông tin user
+PUT    /api/users/{id}             # Cập nhật user
+DELETE /api/users/{id}             # Xóa user (Admin)
+PUT    /api/users/{id}/roles       # Cập nhật roles (Admin)
 ```
-
-#### **Zalo Personal Account**
-
-**Login via QR Code:**
-```http
-POST /zalo/personal/generate-qr
-Authorization: Bearer <token>
-
-Response: 200 OK
-{
-  "qrCode": "data:image/png;base64,iVBORw0KGgo...",
-  "qrCodeUrl": "http://localhost:3008/qr/abc123",
-  "sessionId": "session_abc123",
-  "expiresIn": 300  // 5 phút
-}
-```
-
-**Check Login Status:**
-```http
-GET /zalo/personal/login-status/{sessionId}
-Authorization: Bearer <token>
-
-Response: 200 OK
-{
-  "status": "logged_in",  // hoặc "waiting", "expired"
-  "accountInfo": {
-    "name": "Cửa hàng ABC",
-    "phone": "0901234567",
-    "avatar": "https://...",
-    "userId": "zalo_user_123"
-  }
-}
-```
-
-**Configure AI Settings:**
-```http
-PUT /zalo/personal/config
-Authorization: Bearer <token>
-Content-Type: application/json
-
-{
-  "mode": "suggestion",  // "auto", "suggestion", "notification"
-  "autoReply": true,
-  "useRAG": true,
-  "autoCreateOrder": true,
-  "workingHours": {
-    "enabled": true,
-    "start": "08:00",
-    "end": "22:00"
-  }
-}
-
-Response: 200 OK
-{
-  "status": "success",
-  "config": { ... }
-}
-```
-
-**Get Conversations:**
-```http
-GET /zalo/personal/conversations
-Authorization: Bearer <token>
-Query: ?page=1&limit=20&status=unread
-
-Response: 200 OK
-{
-  "conversations": [
-    {
-      "id": "conv_123",
-      "contact": {
-        "name": "Nguyễn Văn A",
-        "phone": "0912345678",
-        "avatar": "https://..."
-      },
-      "lastMessage": {
-        "text": "Cảm ơn shop",
-        "timestamp": 1735171200000,
-        "fromMe": false
-      },
-      "unreadCount": 2,
-      "aiHandled": true
-    }
-  ],
-  "total": 45,
-  "page": 1
-}
-```
-
-**Send Message (Manual or AI Suggested):**
-```http
-POST /zalo/personal/send-message
-Authorization: Bearer <token>
-Content-Type: application/json
-
-{
-  "conversationId": "conv_123",
-  "message": "Dạ shop đang xử lý đơn hàng cho anh ạ",
-  "isAISuggestion": false
-}
-
-Response: 200 OK
-{
-  "messageId": "msg_456",
-  "status": "sent",
-  "timestamp": 1735171300000
-}
-```
-
-#### **Customers (Business only)**
-
-```http
-GET /business/customers
-Authorization: Bearer <token>  # BUSINESS role required
-
-Response: 200 OK
-{
-  "data": [
-    {
-      "id": 1,
-      "name": "Nguyễn Văn A",
-      "email": "nguyenvana@email.com",
-      "phone": "0901234567",
-      "totalOrders": 5,
-      "totalSpent": 15000000,
-      "segment": "VIP",
-      "businessId": 1  # Chỉ khách hàng của business này
-    }
-  ],
-  "total": 150,
-  "page": 1,
-  "pageSize": 20
-}
-```
-
-#### **Products (Business only)**
-
-```http
-GET /business/products
-Authorization: Bearer <token>  # BUSINESS role required
-
-Response: 200 OK
-{
-  "data": [
-    {
-      "id": 1,
-      "name": "iPhone 15 Pro Max 256GB",
-      "price": 29990000,
-      "stock": 50,
-      "sold": 120,
-      "category": "Điện thoại",
-      "businessId": 1  # Chỉ sản phẩm của business này
-    }
-  ]
-}
-```
-
-#### **Orders**
-
-**Business - Tạo đơn hàng:**
-```http
-POST /business/orders
-Authorization: Bearer <token>  # BUSINESS role required
-Content-Type: application/json
-
-{
-  "customerId": 1,
-  "items": [
-    {
-      "productId": 1,
-      "quantity": 1,
-      "price": 29990000
-    }
-  ],
-  "totalAmount": 29990000,
-  "paymentMethod": "COD"
-}
-
-Response: 201 Created
-{
-  "orderId": 123,
-  "orderCode": "ORD20250101001",
-  "status": "pending",
-  "totalAmount": 29990000,
-  "businessId": 1
-}
-```
-
-**Customer - Xem đơn hàng của mình:**
-```http
-GET /customer/orders
-Authorization: Bearer <token>  # CUSTOMER role required
-
-Response: 200 OK
-{
-  "data": [
-    {
-      "orderId": 123,
-      "orderCode": "ORD20250101001",
-      "status": "pending",
-      "totalAmount": 29990000,
-      "createdAt": "2025-01-01T10:00:00Z",
-      "items": [...]
-    }
-  ]
-}
-```
-
-#### **Analytics & AI Insights (Business only)**
-
-```http
-GET /business/analytics/insights
-Authorization: Bearer <token>  # BUSINESS role required
-Query: ?startDate=2025-01-01&endDate=2025-01-31
-
-Response: 200 OK
-{
-  "businessId": 1,
-  "period": {
-    "start": "2025-01-01",
-    "end": "2025-01-31"
-  },
-  "revenue": {
-    "total": 150000000,
-    "trend": "+15%",
-    "prediction": 180000000
-  },
-  "customerSegmentation": {
-    "vip": 25,
-    "regular": 100,
-    "potential": 50
-  },
-  "recommendations": [
-    {
-      "type": "marketing",
-      "title": "Chạy chiến dịch retargeting",
-      "description": "25% khách hàng chưa quay lại sau 30 ngày",
-      "priority": "high"
-    }
-  ]
-}
-```
-
-#### **Admin - System Stats**
-
-```http
-GET /admin/stats
-Authorization: Bearer <token>  # ADMIN role required
-
-Response: 200 OK
-{
-  "totalBusinesses": 150,
-  "totalCustomers": 15000,
-  "totalOrders": 5000,
-  "totalRevenue": 2500000000,
-  "messagesPerDay": 25000,
-  "activeUsers": 8500,
-  "systemHealth": "healthy"
-}
-```
-
-#### **RAG Document Management (Business only)**
-
-```http
-POST /business/documents/upload
-Authorization: Bearer <token>  # BUSINESS role required
-Content-Type: multipart/form-data
-
-file: [binary file data]
-category: "policy"
-name: "Chính sách bảo hành 2025"
-
-Response: 201 Created
-{
-  "documentId": 45,
-  "name": "Chính sách bảo hành 2025",
-  "businessId": 1,
-  "status": "processing",
-  "chunks": 0,
-  "message": "Đang xử lý tài liệu, AI sẽ học từ tài liệu này"
-}
-```
-
-```http
-GET /business/documents
-Authorization: Bearer <token>  # BUSINESS role required
-
-Response: 200 OK
-{
-  "documents": [
-    {
-      "id": 45,
-      "name": "Chính sách bảo hành 2025",
-      "category": "policy",
-      "uploadedAt": "2025-01-15T10:30:00Z",
-      "chunks": 12,
-      "status": "ready",
-      "businessId": 1  # Chỉ tài liệu của business này
-    }
-  ]
-}
-```
-
-**Xem full API documentation tại:** `http://localhost:8088/swagger-ui.html`
 
 ---
 
-## 🗺️ Roadmap
+### AI Service API Endpoints
 
-### ✅ Phase 1: MVP (Hoàn thành - Q1 2025)
-- [x] Chatbot cơ bản với Gemini API
-- [x] CRM mini (Khách hàng, Sản phẩm, Đơn hàng)
-- [x] Dashboard thống kê
-- [x] Tích hợp RAG với vector database
-- [x] Authentication & Authorization
-- [x] **Role-based Access Control (RBAC)**: Admin / Business / Customer
+#### Document Processing
+```
+POST   /api/v1/documents/process   # Xử lý document
+POST   /api/v1/documents/embed     # Generate embeddings
+```
 
-### 🚧 Phase 2: Nâng cao đa kênh (Đang phát triển - Q2 2025)
-- [x] Tích hợp Zalo OA cơ bản
-- [x] Website Chatbot Widget
-- [x] **Zalo Personal Account** (QR Code login)
-- [ ] **AI Suggestion Mode** (Gợi ý + xác nhận)
-- [ ] **Takeover Mode** (Chuyển sang nhân viên thật)
-- [ ] Zalo OA Template Messages
-- [ ] Zalo Pay integration
-- [ ] Zalo Mini App
-- [ ] Push notifications (Website + Zalo)
-- [ ] Email marketing automation
+#### RAG Service
+```
+POST   /api/v1/rag/query           # RAG query
+POST   /api/v1/rag/search          # Vector search
+```
 
-### 🔮 Phase 3: AI nâng cao (Q3 2025)
-- [ ] Phân tích tâm lý khách hàng (Sentiment Analysis)
-- [ ] Dự đoán churn rate
-- [ ] Recommendation engine cá nhân hóa
-- [ ] AI voice assistant (Text-to-Speech & Speech-to-Text)
-- [ ] Multi-language support
-- [ ] Auto-reply thông minh theo thời gian
-- [ ] Chatbot learning từ feedback khách hàng
-
-### 🚀 Phase 4: Scale & Commercialize (Q4 2025)
-- [ ] SaaS multi-tenant architecture
-- [ ] Subscription billing system
-- [ ] White-label solution (Website Widget + Zalo OA)
-- [ ] Advanced analytics with ML models
-- [ ] Zalo Mini App nâng cao
-- [ ] API marketplace & webhooks
-- [ ] Widget customization builder (no-code)
+#### Gemini Integration
+```
+POST   /api/v1/gemini/chat         # Chat với Gemini
+POST   /api/v1/gemini/analyze      # Phân tích với Gemini
+```
 
 ---
 
-## 🤝 Đóng góp
+## 🔐 Authentication & Security
 
-Chúng tôi rất hoan nghênh mọi đóng góp từ cộng đồng! 
+### JWT Token Flow
 
-### Cách đóng góp
+```
+1. User login → Backend validates credentials
+2. Backend generates JWT access token + refresh token
+3. Frontend stores tokens (secure storage)
+4. All API calls include: Authorization: Bearer {token}
+5. Token expires → Use refresh token to get new access token
+```
 
-1. **Fork repository**
-2. **Tạo branch mới**: `git checkout -b feature/TenTinhNang`
-3. **Commit changes**: `git commit -m 'Add: Thêm tính năng XYZ'`
-4. **Push to branch**: `git push origin feature/TenTinhNang`
-5. **Tạo Pull Request**
+### Role-Based Access Control (RBAC)
 
-### Quy tắc đóng góp
+| Role | Permissions |
+|------|-------------|
+| **ADMIN** | Full system access, user management, all operations |
+| **MANAGER** | View all data, create/edit documents, generate reports |
+| **USER** | View own data, upload documents, use chatbot |
+| **GUEST** | Limited read-only access |
 
-- ✅ Code phải follow coding conventions
-- ✅ Viết unit tests cho code mới
-- ✅ Update documentation nếu cần
-- ✅ Commit message rõ ràng và mô tả đầy đủ
-- ✅ Pull request phải pass CI/CD checks
+---
 
-### Báo lỗi (Bug Report)
+## 🧪 Testing
 
-Nếu bạn phát hiện lỗi, vui lòng tạo issue với thông tin:
-- Mô tả lỗi chi tiết
-- Các bước tái hiện (steps to reproduce)
-- Expected behavior vs Actual behavior
-- Screenshots (nếu có)
-- Environment (OS, Browser, versions...)
+### Backend Tests
+```bash
+cd backend/SpringService
+mvn test
+mvn verify
+```
+
+### AI Service Tests
+```bash
+cd backend/pythonService
+pytest
+pytest --cov=app tests/
+```
+
+### Frontend Tests
+```bash
+cd frontend
+npm test              # Run Jest tests
+npm run test:e2e     # Run Playwright E2E tests
+npm run test:coverage
+```
+
+---
+
+## 📊 Performance & Monitoring
+
+### Key Metrics
+- ⚡ API Response Time: < 200ms
+- 🔍 Vector Search: < 100ms
+- 💬 Chat Response: < 2s
+- 📁 Document Processing: < 5s per file
+
+### Monitoring Tools
+- **Spring Boot Actuator**: Health checks, metrics
+- **Redis Monitor**: Cache hit rates
+- **MySQL Slow Query Log**: Database optimization
+- **Application Logs**: Centralized logging
+
+---
+
+## 🛠️ Troubleshooting
+
+### Common Issues
+
+#### 1. Database Connection Failed
+```bash
+# Kiểm tra MySQL service
+docker-compose ps mysql
+
+# Xem logs
+docker-compose logs mysql
+
+# Restart service
+docker-compose restart mysql
+```
+
+#### 2. Gemini API Error
+```bash
+# Kiểm tra API key
+echo $GEMINI_API_KEY
+
+# Test API connection
+curl -X POST https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent \
+  -H "Content-Type: application/json" \
+  -H "x-goog-api-key: $GEMINI_API_KEY"
+```
+
+#### 3. WebSocket Connection Failed
+```bash
+# Kiểm tra CORS configuration
+# Check application.yml: allowed-origins
+
+# Test WebSocket endpoint
+wscat -c ws://localhost:8080/ws/chat
+```
+
+---
+
+## 🚧 Roadmap
+
+### Phase 1 (Current) ✅
+- [x] Basic infrastructure setup
+- [x] Document management
+- [x] Simple chatbot
+- [x] User authentication
+
+### Phase 2 (In Progress) 🚧
+- [ ] Advanced RAG implementation
+- [ ] Strategic analysis module
+- [ ] Real-time notifications
+- [ ] Advanced reporting
+
+### Phase 3 (Planned) 📋
+- [ ] Multi-language support (i18n)
+- [ ] Voice interaction
+- [ ] Mobile app (React Native / PWA)
+- [ ] Advanced analytics dashboard
+- [ ] Integration with popular CRM systems
+- [ ] Edge Runtime optimization
+
+---
+
+## 🤝 Đóng Góp
+
+Chúng tôi hoan nghênh mọi đóng góp! Vui lòng:
+
+1. Fork repository
+2. Tạo branch mới (`git checkout -b feature/AmazingFeature`)
+3. Commit changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to branch (`git push origin feature/AmazingFeature`)
+5. Mở Pull Request
+
+### Code Style Guidelines
+- **Java**: Follow Google Java Style Guide
+- **Python**: Follow PEP 8
+- **TypeScript/Next.js**: Follow Airbnb Style Guide + Next.js Best Practices
+- **Commit Messages**: Follow Conventional Commits
 
 ---
 
 ## 📄 License
 
-Dự án này được phân phối dưới giấy phép **MIT License**.
-
-```
-MIT License
-
-Copyright (c) 2025 AI Agent for Business
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-```
-
-Xem chi tiết tại [LICENSE](./LICENSE)
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ---
 
-## 📞 Liên hệ
+## 👥 Thông Tin Đồ Án
 
-### 👨‍💻 Tác giả
+### Sinh Viên Thực Hiện
+- **Họ và tên:** Nguyễn Văn Hoàng
+- **MSSV:** 110122078
+- **Lớp:** Kỹ Thuật Công Nghệ
+- **Khoa:** Công Nghệ Thông Tin
+- **Trường:** Đại Học Trà Vinh
 
-**Your Name**
-- 📧 Email: your.email@example.com
-- 🐙 GitHub: [@yourusername](https://github.com/yourusername)
-- 💼 LinkedIn: [Your Name](https://linkedin.com/in/yourprofile)
-- 🌐 Website: [yourwebsite.com](https://yourwebsite.com)
+### Giáo Viên Hướng Dẫn
+- **Họ và tên:** ThS. TS. Nguyễn Bảo Ân
+- **Khoa:** Công Nghệ Thông Tin
 
-### 🏢 Tổ chức
+### Đề Tài
+**Xây dựng hệ thống AI Agent hỗ trợ doanh nghiệp chăm sóc khách hàng và đề xuất chiến lược**  
+(AI Agent for Business)
 
-**AI Agent for Business Team**
-- 📧 Email: contact@aiagent.business
-- 🌐 Website: https://aiagent.business
-- 📱 Hotline: +84 901 234 567
+---
 
-### 💬 Cộng đồng
+## 📧 Liên Hệ
 
-- 💬 **Telegram Group**: [Join our community](https://t.me/ai_agent_business)
-- 💡 **Discord Server**: [Join Discord](https://discord.gg/aiagent)
-- 📚 **Documentation**: [docs.aiagent.business](https://docs.aiagent.business)
-- ❓ **Q&A Forum**: [GitHub Discussions](https://github.com/yourusername/AI-Agent-for-Business/discussions)
+- **Sinh viên:** Nguyễn Văn Hoàng
+- **Email:** 110122078@st.tvu.edu.vn
+- **GitHub:** [@vanhoangtvu](https://github.com/vanhoangtvu)
+- **Trường:** Đại Học Trà Vinh
+- **Repository:** [AI-Agent-for-Business](https://github.com/vanhoangtvu/AI-Agent-for-Business)
+- **Issues:** [GitHub Issues](https://github.com/vanhoangtvu/AI-Agent-for-Business/issues)
 
 ---
 
 ## 🙏 Acknowledgments
 
-Dự án này được xây dựng với sự hỗ trợ của:
-
-- [Google Gemini API](https://ai.google.dev/) - AI Language Model
-- [Spring Boot](https://spring.io/projects/spring-boot) - Backend Framework
-- [Next.js](https://nextjs.org/) - React Framework with SSR/SSG
-- [LangChain](https://www.langchain.com/) - RAG Framework
-- [Pinecone](https://www.pinecone.io/) - Vector Database
-- [TailwindCSS](https://tailwindcss.com/) - CSS Framework
-- [Shadcn/ui](https://ui.shadcn.com/) - Component Library
-- Và nhiều open-source libraries khác
-
-Cảm ơn tất cả contributors đã đóng góp vào dự án! 🎉
-
----
-
-## 📊 Project Stats
-
-![GitHub stars](https://img.shields.io/github/stars/yourusername/AI-Agent-for-Business?style=social)
-![GitHub forks](https://img.shields.io/github/forks/yourusername/AI-Agent-for-Business?style=social)
-![GitHub issues](https://img.shields.io/github/issues/yourusername/AI-Agent-for-Business)
-![GitHub pull requests](https://img.shields.io/github/issues-pr/yourusername/AI-Agent-for-Business)
-![GitHub last commit](https://img.shields.io/github/last-commit/yourusername/AI-Agent-for-Business)
-![GitHub contributors](https://img.shields.io/github/contributors/yourusername/AI-Agent-for-Business)
+- [Spring Boot](https://spring.io/projects/spring-boot)
+- [Next.js](https://nextjs.org/)
+- [FastAPI](https://fastapi.tiangolo.com/)
+- [Google Generative AI](https://ai.google.dev/)
+- [Sentence Transformers](https://www.sbert.net/)
+- [Vercel](https://vercel.com/) - Next.js creators
 
 ---
 
 <div align="center">
 
-**⭐ Nếu bạn thấy dự án hữu ích, đừng quên cho chúng tôi một ngôi sao nhé! ⭐**
+**Đồ Án Chuyên Ngành - Made with ❤️ by Nguyễn Văn Hoàng**
 
-Made with ❤️ by AI Agent for Business Team
+🎓 Đại Học Trà Vinh - Khoa Công Nghệ Thông Tin
+
+⭐ Star us on GitHub — it helps!
+
+[Report Bug](https://github.com/vanhoangtvu/AI-Agent-for-Business/issues) · [Request Feature](https://github.com/vanhoangtvu/AI-Agent-for-Business/issues)
+
+---
+
+© 2024-2025 Nguyễn Văn Hoàng - Đại Học Trà Vinh
 
 </div>
+
