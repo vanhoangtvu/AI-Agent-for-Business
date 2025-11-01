@@ -367,9 +367,9 @@ npm run dev
 ### Truy Cập Ứng Dụng
 
 - 🌐 **Frontend**: http://localhost:3000
-- ⚙️ **Backend API**: http://localhost:8080
+- ⚙️ **Backend API**: http://localhost:8100
 - 🤖 **AI Service API**: http://localhost:8000
-- 📚 **API Docs (Swagger)**: http://localhost:8080/swagger-ui.html
+- 📚 **API Docs (Swagger)**: http://localhost:8100/swagger-ui.html
 - 📖 **FastAPI Docs**: http://localhost:8000/docs
 
 ---

@@ -1,0 +1,191 @@
+spring:
+  application:
+    name: ai-agent-backend
+
+  # Database Configuration
+  datasource:
+    url: jdbc:mysql://localhost:3306/AI_Agent_db?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true&createDatabaseIfNotExist=true
+    username: root
+    password: 1111
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 5
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+
+  # JPA/Hibernate Configuration
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL8Dialect
+        format_sql: true
+        use_sql_comments: true
+    open-in-view: false
+
+  # Redis Configuration
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      password: 
+      timeout: 60000
+      lettuce:
+        pool:
+          max-active: 8
+          max-idle: 8
+          min-idle: 0
+          max-wait: -1ms
+
+  # File Upload Configuration
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 50MB
+      max-request-size: 50MB
+      file-size-threshold: 2KB
+
+  # Jackson Configuration
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+    deserialization:
+      fail-on-unknown-properties: false
+
+# Server Configuration
+server:
+  port: 8100
+  compression:
+    enabled: true
+  error:
+    include-message: always
+    include-binding-errors: always
+
+# Application Configuration
+app:
+  # JWT Configuration
+  jwt:
+    secret: your_super_secret_jwt_key_change_this_to_something_very_long_and_secure_min_256_bits
+    expiration: 86400000  # 24 hours
+    refresh-expiration: 604800000  # 7 days
+
+  # AI Service Configuration
+  ai-service:
+    url: http://localhost:8000
+    timeout: 30000
+    endpoints:
+      rag-query: /api/v1/rag/query
+      process-document: /api/v1/documents/process
+      embed-text: /api/v1/documents/embed
+      gemini-chat: /api/v1/gemini/chat
+      strategic-analysis: /api/v1/gemini/analyze
+
+  # File Upload Configuration
+  upload:
+    dir: ./uploads
+    max-size: 52428800  # 50MB in bytes
+    allowed-types:
+      - application/pdf
+      - application/msword
+      - application/vnd.openxmlformats-officedocument.wordprocessingml.document
+      - text/plain
+      - application/vnd.ms-excel
+      - application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
+
+  # CORS Configuration
+  cors:
+    allowed-origins:
+      - http://localhost:3000
+      - http://localhost:8100
+    allowed-methods:
+      - GET
+      - POST
+      - PUT
+      - DELETE
+      - OPTIONS
+    allowed-headers: "*"
+    allow-credentials: true
+    max-age: 3600
+
+# Logging Configuration
+logging:
+  level:
+    root: INFO
+    com.aiagent: DEBUG
+    org.springframework.web: INFO
+    org.springframework.security: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+  file:
+    name: logs/ai-agent-backend.log
+    max-size: 10MB
+    max-history: 30
+
+# Management/Actuator Configuration
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+      base-path: /actuator
+  endpoint:
+    health:
+      show-details: always
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+
+# Springdoc OpenAPI Configuration
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    enabled: true
+    operations-sorter: method
+    tags-sorter: alpha
+  show-actuator: true
+
+---
+# Development Profile
+spring:
+  config:
+    activate:
+      on-profile: dev
+  jpa:
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+
+logging:
+  level:
+    com.aiagent: DEBUG
+
+---
+# Production Profile
+spring:
+  config:
+    activate:
+      on-profile: prod
+  jpa:
+    show-sql: false
+  datasource:
+    url: jdbc:mysql://mysql:3306/AI_Agent_db?useSSL=true&serverTimezone=UTC
+
+logging:
+  level:
+    root: WARN
+    com.aiagent: INFO
+
+server:
+  port: 8100
+
