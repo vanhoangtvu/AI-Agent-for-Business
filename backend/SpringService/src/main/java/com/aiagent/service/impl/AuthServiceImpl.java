@@ -49,10 +49,22 @@ public class AuthServiceImpl implements AuthService {
             throw new RuntimeException("Username already exists");
         }
 
-        // Create new user
+        // Determine user role
         Set<String> roles = new HashSet<>();
-        roles.add("USER");
+        String requestedRole = request.getRole();
+        
+        if (requestedRole != null && !requestedRole.isEmpty()) {
+            // Validate role
+            if (requestedRole.equals("ADMIN") || requestedRole.equals("BUSINESS") || requestedRole.equals("CUSTOMER")) {
+                roles.add(requestedRole);
+            } else {
+                roles.add("CUSTOMER"); // Default role
+            }
+        } else {
+            roles.add("CUSTOMER"); // Default role if not specified
+        }
 
+        // Create new user
         User user = User.builder()
                 .username(request.getUsername())
                 .email(request.getEmail())

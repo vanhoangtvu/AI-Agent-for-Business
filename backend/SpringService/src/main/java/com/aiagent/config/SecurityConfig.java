@@ -54,9 +54,22 @@ public class SecurityConfig {
                     "/actuator/health",
                     "/ws/**"
                 ).permitAll()
-                // Protected endpoints
+                // Admin endpoints - Only ADMIN
                 .requestMatchers("/api/admin/**").hasRole("ADMIN")
-                .requestMatchers("/api/manager/**").hasAnyRole("ADMIN", "MANAGER")
+                // Business endpoints - ADMIN and BUSINESS
+                .requestMatchers("/api/business/**").hasAnyRole("ADMIN", "BUSINESS")
+                // Documents endpoints - ADMIN and BUSINESS can manage, CUSTOMER can view
+                .requestMatchers("/api/documents/upload", "/api/documents/*/edit", "/api/documents/*/delete")
+                    .hasAnyRole("ADMIN", "BUSINESS")
+                .requestMatchers("/api/documents/**").hasAnyRole("ADMIN", "BUSINESS", "CUSTOMER")
+                // Chat endpoints - All authenticated users
+                .requestMatchers("/api/chat/**").hasAnyRole("ADMIN", "BUSINESS", "CUSTOMER")
+                // Strategic analysis - Only ADMIN and BUSINESS
+                .requestMatchers("/api/strategic/**").hasAnyRole("ADMIN", "BUSINESS")
+                // Users endpoints - Based on role
+                .requestMatchers("/api/users/me").authenticated()
+                .requestMatchers("/api/users/**").hasRole("ADMIN")
+                // All other requests must be authenticated
                 .anyRequest().authenticated()
             )
             .sessionManagement(session -> session
