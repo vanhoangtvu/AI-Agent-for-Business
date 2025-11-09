@@ -78,11 +78,20 @@ app:
     url: http://localhost:8000
     timeout: 30000
     endpoints:
-      rag-query: /api/v1/rag/query
-      process-document: /api/v1/documents/process
-      embed-text: /api/v1/documents/embed
-      gemini-chat: /api/v1/gemini/chat
-      strategic-analysis: /api/v1/gemini/analyze
+      # Chat endpoints (RAG-powered)
+      chat-generate: /api/chat/generate-response
+      chat-quick: /api/chat/quick-test
+      
+      # Document endpoints
+      process-document: /api/documents/process
+      search-documents: /api/documents/search
+      extract-text: /api/documents/extract-text
+      
+      # Strategic analysis
+      strategic-analysis: /api/strategic/analyze
+      
+      # Health check
+      health: /health
 
   # File Upload Configuration
   upload:

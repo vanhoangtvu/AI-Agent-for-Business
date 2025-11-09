@@ -50,7 +50,7 @@ public class Document {
     @Column(length = 100)
     private String category;
 
-    @ElementCollection
+    @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "document_tags", joinColumns = @JoinColumn(name = "document_id"))
     @Column(name = "tag")
     @Builder.Default

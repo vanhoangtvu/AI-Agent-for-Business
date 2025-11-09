@@ -1,5 +1,6 @@
 package com.aiagent.model.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -34,11 +35,13 @@ public class Conversation {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
+    @JsonIgnoreProperties({"conversations", "documents", "password", "authorities", "hibernateLazyInitializer", "handler"})
     private User user;
 
-    @OneToMany(mappedBy = "conversation", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "conversation", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @OrderBy("createdAt ASC")
     @Builder.Default
+    @JsonIgnoreProperties({"conversation", "hibernateLazyInitializer", "handler"})
     private List<Message> messages = new ArrayList<>();
 
     @Column(nullable = false)

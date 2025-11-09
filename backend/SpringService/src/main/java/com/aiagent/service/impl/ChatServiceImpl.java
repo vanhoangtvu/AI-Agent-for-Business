@@ -7,6 +7,7 @@ import com.aiagent.model.entity.Conversation;
 import com.aiagent.model.entity.User;
 import com.aiagent.repository.ConversationRepository;
 import com.aiagent.repository.MessageRepository;
+import com.aiagent.service.AIClientService;
 import com.aiagent.service.ChatService;
 import com.aiagent.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -15,7 +16,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Chat Service Implementation
@@ -29,7 +34,7 @@ public class ChatServiceImpl implements ChatService {
     private final ConversationRepository conversationRepository;
     private final MessageRepository messageRepository;
     private final UserService userService;
-    // TODO: Inject AIClientService when ready
+    private final AIClientService aiClientService;
 
     @Override
     public Conversation createConversation(String title) {
@@ -74,9 +79,23 @@ public class ChatServiceImpl implements ChatService {
         conversation.addMessage(userMessage);
         userMessage = messageRepository.save(userMessage);
 
-        // TODO: Call AI Service to get response
-        // For now, return a mock response
-        String aiResponseContent = generateMockResponse(request.getMessage());
+        // Build conversation history for AI
+        List<Map<String, String>> conversationHistory = buildConversationHistory(conversation);
+        
+        // Call AI Service to get response
+        ChatRequest aiRequest = ChatRequest.builder()
+                .message(request.getMessage())
+                .conversationId(request.getConversationId())
+                .userId(conversation.getUser().getId())
+                .conversationHistory(conversationHistory)
+                .useRag(false) // Can be enabled when documents are attached
+                .build();
+        
+        ChatResponse aiResponse = aiClientService.sendChatMessage(aiRequest);
+        
+        String aiResponseContent = aiResponse.getResponse();
+        log.info("AI response received. Processing time: {}s, Sources: {}", 
+                aiResponse.getProcessingTime(), aiResponse.getSourcesCount());
 
         // Create AI message
         Conversation.Message aiMessage = Conversation.Message.builder()
@@ -98,10 +117,15 @@ public class ChatServiceImpl implements ChatService {
         // Build response
         return ChatResponse.builder()
                 .messageId(aiMessage.getId())
+                .message(request.getMessage())
                 .response(aiResponseContent)
+                .model(aiResponse.getModel())
+                .processingTime(aiResponse.getProcessingTime())
+                .sourcesCount(aiResponse.getSourcesCount())
                 .sentiment("NEUTRAL")
                 .confidence(0.85)
                 .timestamp(LocalDateTime.now())
+                .success(aiResponse.getSuccess())
                 .build();
     }
 
@@ -118,11 +142,20 @@ public class ChatServiceImpl implements ChatService {
     }
 
     /**
-     * Mock AI response - will be replaced with actual AI service call
+     * Build conversation history for AI context
      */
-    private String generateMockResponse(String userMessage) {
-        return "Cảm ơn bạn đã liên hệ. Đây là phản hồi tự động. " +
-               "AI Service sẽ được tích hợp để trả lời câu hỏi: \"" + userMessage + "\"";
+    private List<Map<String, String>> buildConversationHistory(Conversation conversation) {
+        List<Conversation.Message> messages = messageRepository
+                .findByConversationIdOrderByCreatedAt(conversation.getId());
+        
+        return messages.stream()
+                .map(msg -> {
+                    Map<String, String> historyEntry = new HashMap<>();
+                    historyEntry.put("role", msg.getRole() == Conversation.Message.MessageRole.USER ? "user" : "assistant");
+                    historyEntry.put("content", msg.getContent());
+                    return historyEntry;
+                })
+                .collect(Collectors.toList());
     }
 
 }

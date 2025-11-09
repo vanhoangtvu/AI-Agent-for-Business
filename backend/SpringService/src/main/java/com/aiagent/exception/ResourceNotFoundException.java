@@ -1,4 +1,4 @@
-m package com.aiagent.exception;
+package com.aiagent.exception;
 
 /**
  * Exception thrown when a resource is not found
