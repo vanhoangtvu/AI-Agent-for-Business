@@ -50,6 +50,8 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
            "p.stockQuantity <= :threshold ORDER BY p.stockQuantity ASC")
     List<Product> findLowStockProducts(@Param("threshold") Integer threshold);
     
+    List<Product> findByStockQuantityLessThanEqualAndIsActiveTrue(Integer threshold);
+    
     @Query("SELECT COUNT(p) FROM Product p WHERE p.isActive = true AND p.category.id = :categoryId")
     Long countByCategory(@Param("categoryId") Long categoryId);
 }

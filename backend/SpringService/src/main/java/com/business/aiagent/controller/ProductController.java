@@ -4,32 +4,28 @@ import com.business.aiagent.dto.ProductRequest;
 import com.business.aiagent.dto.ProductResponse;
 import com.business.aiagent.entity.Role;
 import com.business.aiagent.security.RequirePermission;
+import com.business.aiagent.service.ProductService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.validation.Valid;
 import java.math.BigDecimal;
+import java.util.List;
 
-/**
- * Product Management Controller
- * ADMIN: Manage all products
- * BUSINESS: Manage own products
- * CUSTOMER: View products only
- */
 @RestController
 @RequestMapping("/api/products")
 @RequiredArgsConstructor
 @Tag(name = "Product Management", description = "Product management APIs")
 @SecurityRequirement(name = "Bearer Authentication")
 public class ProductController {
+    
+    private final ProductService productService;
     
     @GetMapping
     @Operation(summary = "Get all products", description = "Public API - No authentication required")
@@ -43,23 +39,27 @@ public class ProductController {
         @RequestParam(required = false) BigDecimal minPrice,
         @RequestParam(required = false) BigDecimal maxPrice
     ) {
-        // TODO: Implement service call
-        return ResponseEntity.ok(Page.empty());
+        Page<ProductResponse> products = productService.getAllProducts(
+            page, size, sortBy, sortDir, categoryId, keyword, minPrice, maxPrice
+        );
+        return ResponseEntity.ok(products);
     }
     
     @GetMapping("/{id}")
     @Operation(summary = "Get product details", description = "Public API")
     public ResponseEntity<ProductResponse> getProductById(@PathVariable Long id) {
-        // TODO: Implement service call
-        return ResponseEntity.ok(ProductResponse.builder().build());
+        ProductResponse product = productService.getProductById(id);
+        return ResponseEntity.ok(product);
     }
     
     @PostMapping
     @Operation(summary = "Create new product")
     @RequirePermission(Role.Permission.PRODUCT_CREATE)
-    public ResponseEntity<ProductResponse> createProduct(@Valid @RequestBody ProductRequest request) {
-        // TODO: Implement service call
-        return ResponseEntity.ok(ProductResponse.builder().build());
+    public ResponseEntity<ProductResponse> createProduct(
+            @Valid @RequestBody ProductRequest request,
+            Authentication authentication) {
+        ProductResponse product = productService.createProduct(request, authentication.getName());
+        return ResponseEntity.ok(product);
     }
     
     @PutMapping("/{id}")
@@ -67,17 +67,20 @@ public class ProductController {
     @RequirePermission(Role.Permission.PRODUCT_UPDATE)
     public ResponseEntity<ProductResponse> updateProduct(
         @PathVariable Long id,
-        @Valid @RequestBody ProductRequest request
+        @Valid @RequestBody ProductRequest request,
+        Authentication authentication
     ) {
-        // TODO: Implement service call
-        return ResponseEntity.ok(ProductResponse.builder().build());
+        ProductResponse product = productService.updateProduct(id, request, authentication.getName());
+        return ResponseEntity.ok(product);
     }
     
     @DeleteMapping("/{id}")
     @Operation(summary = "Delete product")
     @RequirePermission(Role.Permission.PRODUCT_DELETE)
-    public ResponseEntity<Void> deleteProduct(@PathVariable Long id) {
-        // TODO: Implement service call
+    public ResponseEntity<Void> deleteProduct(
+            @PathVariable Long id,
+            Authentication authentication) {
+        productService.deleteProduct(id, authentication.getName());
         return ResponseEntity.noContent().build();
     }
     
@@ -86,17 +89,18 @@ public class ProductController {
     @RequirePermission(Role.Permission.PRODUCT_READ)
     public ResponseEntity<Page<ProductResponse>> getMyProducts(
         @RequestParam(defaultValue = "0") int page,
-        @RequestParam(defaultValue = "10") int size
+        @RequestParam(defaultValue = "10") int size,
+        Authentication authentication
     ) {
-        // TODO: Implement service call
-        return ResponseEntity.ok(Page.empty());
+        Page<ProductResponse> products = productService.getMyProducts(authentication.getName(), page, size);
+        return ResponseEntity.ok(products);
     }
     
     @GetMapping("/top-selling")
     @Operation(summary = "Top selling products", description = "Public API")
-    public ResponseEntity<?> getTopSellingProducts(@RequestParam(defaultValue = "10") int limit) {
-        // TODO: Implement service call
-        return ResponseEntity.ok().build();
+    public ResponseEntity<List<ProductResponse>> getTopSellingProducts(@RequestParam(defaultValue = "10") int limit) {
+        List<ProductResponse> products = productService.getTopSellingProducts(limit);
+        return ResponseEntity.ok(products);
     }
     
     @GetMapping("/featured")
@@ -105,15 +109,15 @@ public class ProductController {
         @RequestParam(defaultValue = "0") int page,
         @RequestParam(defaultValue = "10") int size
     ) {
-        // TODO: Implement service call
-        return ResponseEntity.ok(Page.empty());
+        Page<ProductResponse> products = productService.getFeaturedProducts(page, size);
+        return ResponseEntity.ok(products);
     }
     
     @GetMapping("/low-stock")
     @Operation(summary = "Low stock products", description = "BUSINESS/ADMIN - Products with low inventory")
     @RequirePermission(Role.Permission.PRODUCT_READ)
-    public ResponseEntity<?> getLowStockProducts(@RequestParam(defaultValue = "10") int threshold) {
-        // TODO: Implement service call
-        return ResponseEntity.ok().build();
+    public ResponseEntity<List<ProductResponse>> getLowStockProducts(@RequestParam(defaultValue = "10") int threshold) {
+        List<ProductResponse> products = productService.getLowStockProducts(threshold);
+        return ResponseEntity.ok(products);
     }
 }

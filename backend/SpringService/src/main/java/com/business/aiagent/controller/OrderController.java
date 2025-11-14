@@ -5,22 +5,18 @@ import com.business.aiagent.dto.OrderResponse;
 import com.business.aiagent.entity.Order;
 import com.business.aiagent.entity.Role;
 import com.business.aiagent.security.RequirePermission;
+import com.business.aiagent.service.OrderService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.validation.Valid;
 
-/**
- * Order Management Controller
- * CUSTOMER: View own orders, create new orders, cancel orders
- * BUSINESS: View orders containing own products, update status
- * ADMIN: Manage all orders
- */
 @RestController
 @RequestMapping("/api/orders")
 @RequiredArgsConstructor
@@ -28,98 +24,94 @@ import jakarta.validation.Valid;
 @SecurityRequirement(name = "Bearer Authentication")
 public class OrderController {
     
+    private final OrderService orderService;
+    
     @PostMapping
     @Operation(summary = "Create order", description = "CUSTOMER - Create order from cart")
     @RequirePermission(Role.Permission.ORDER_CREATE)
-    public ResponseEntity<OrderResponse> createOrder(@Valid @RequestBody OrderRequest request) {
-        // TODO: Implement service call
-        // Auto set user from SecurityContext
-        return ResponseEntity.ok(OrderResponse.builder().build());
+    public ResponseEntity<OrderResponse> createOrder(
+            @Valid @RequestBody OrderRequest request,
+            Authentication authentication) {
+        OrderResponse order = orderService.createOrder(request, authentication.getName());
+        return ResponseEntity.ok(order);
     }
     
     @GetMapping
-    @Operation(summary = "Get order list", description = "Filtered by role")
+    @Operation(summary = "Get my orders", description = "CUSTOMER - View own orders")
     @RequirePermission(Role.Permission.ORDER_READ)
     public ResponseEntity<Page<OrderResponse>> getOrders(
         @RequestParam(defaultValue = "0") int page,
         @RequestParam(defaultValue = "10") int size,
-        @RequestParam(required = false) Order.OrderStatus status
+        Authentication authentication
     ) {
-        // TODO: Implement service call
-        return ResponseEntity.ok(Page.empty());
+        Page<OrderResponse> orders = orderService.getOrders(authentication.getName(), page, size);
+        return ResponseEntity.ok(orders);
     }
     
     @GetMapping("/{id}")
-    @Operation(summary = "Get order details", description = "Check ownership permissions")
+    @Operation(summary = "Get order details")
     @RequirePermission(Role.Permission.ORDER_READ)
-    public ResponseEntity<OrderResponse> getOrderById(@PathVariable Long id) {
-        // TODO: Implement service call
-        // Check ownership: CUSTOMER (own order), BUSINESS (has products), ADMIN (all)
-        return ResponseEntity.ok(OrderResponse.builder().build());
+    public ResponseEntity<OrderResponse> getOrderById(
+            @PathVariable Long id,
+            Authentication authentication) {
+        OrderResponse order = orderService.getOrder(id, authentication.getName());
+        return ResponseEntity.ok(order);
     }
     
     @GetMapping("/number/{orderNumber}")
-    @Operation(summary = "Find order by number", description = "Public tracking endpoint")
-    public ResponseEntity<OrderResponse> getOrderByNumber(@PathVariable String orderNumber) {
-        // TODO: Implement service call
-        // Basic info for tracking
-        return ResponseEntity.ok(OrderResponse.builder().build());
+    @Operation(summary = "Find order by number")
+    public ResponseEntity<OrderResponse> getOrderByNumber(
+            @PathVariable String orderNumber,
+            Authentication authentication) {
+        OrderResponse order = orderService.getOrderByNumber(orderNumber, authentication.getName());
+        return ResponseEntity.ok(order);
     }
     
     @PatchMapping("/{id}/status")
-    @Operation(summary = "Update order status", description = "BUSINESS/ADMIN - Workflow: PENDING → CONFIRMED → PROCESSING → SHIPPING → DELIVERED")
+    @Operation(summary = "Update order status", description = "BUSINESS/ADMIN")
     @RequirePermission(Role.Permission.ORDER_UPDATE)
     public ResponseEntity<OrderResponse> updateOrderStatus(
         @PathVariable Long id,
-        @RequestParam Order.OrderStatus status
+        @RequestParam Order.OrderStatus status,
+        Authentication authentication
     ) {
-        // TODO: Implement service call
-        // Validate workflow: PENDING → CONFIRMED → PROCESSING → SHIPPING → DELIVERED
-        return ResponseEntity.ok(OrderResponse.builder().build());
+        OrderResponse order = orderService.updateOrderStatus(id, status, authentication.getName());
+        return ResponseEntity.ok(order);
     }
     
-    @PatchMapping("/{id}/cancel")
-    @Operation(summary = "Cancel order", description = "CUSTOMER (PENDING only), BUSINESS/ADMIN (any status)")
+    @PostMapping("/{id}/cancel")
+    @Operation(summary = "Cancel order", description = "CUSTOMER - Cancel own order")
     @RequirePermission(Role.Permission.ORDER_UPDATE)
-    public ResponseEntity<OrderResponse> cancelOrder(
+    public ResponseEntity<Void> cancelOrder(
         @PathVariable Long id,
-        @RequestParam(required = false) String reason
+        @RequestParam(required = false) String reason,
+        Authentication authentication
     ) {
-        // TODO: Implement service call
-        return ResponseEntity.ok(OrderResponse.builder().build());
+        orderService.cancelOrder(id, reason, authentication.getName());
+        return ResponseEntity.noContent().build();
     }
     
     @PatchMapping("/{id}/tracking")
-    @Operation(summary = "Update tracking number", description = "BUSINESS/ADMIN - Add tracking number")
+    @Operation(summary = "Update tracking number", description = "BUSINESS/ADMIN")
     @RequirePermission(Role.Permission.ORDER_UPDATE)
     public ResponseEntity<OrderResponse> updateTrackingNumber(
         @PathVariable Long id,
-        @RequestParam String trackingNumber
+        @RequestParam String trackingNumber,
+        Authentication authentication
     ) {
-        // TODO: Implement service call
-        return ResponseEntity.ok(OrderResponse.builder().build());
+        OrderResponse order = orderService.updateTrackingNumber(id, trackingNumber, authentication.getName());
+        return ResponseEntity.ok(order);
     }
     
     @PatchMapping("/{id}/payment-status")
-    @Operation(summary = "Update payment status", description = "BUSINESS/ADMIN - Payment status")
+    @Operation(summary = "Update payment status", description = "BUSINESS/ADMIN")
     @RequirePermission(Role.Permission.ORDER_UPDATE)
     public ResponseEntity<OrderResponse> updatePaymentStatus(
         @PathVariable Long id,
-        @RequestParam Order.PaymentStatus paymentStatus
+        @RequestParam Order.PaymentStatus status,
+        Authentication authentication
     ) {
-        // TODO: Implement service call
-        return ResponseEntity.ok(OrderResponse.builder().build());
-    }
-    
-    @GetMapping("/statistics")
-    @Operation(summary = "Get order statistics", description = "BUSINESS/ADMIN - Order statistics")
-    @RequirePermission(Role.Permission.ORDER_READ)
-    public ResponseEntity<?> getOrderStatistics(
-        @RequestParam(required = false) String startDate,
-        @RequestParam(required = false) String endDate
-    ) {
-        // TODO: Implement service call
-        // Return: total orders, total revenue, orders by status, avg order value
-        return ResponseEntity.ok().build();
+        OrderResponse order = orderService.updatePaymentStatus(id, status, authentication.getName());
+        return ResponseEntity.ok(order);
     }
 }
