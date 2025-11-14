@@ -72,7 +72,7 @@ public class UserService {
                 user.getFullName(),
                 user.getPhone(),
                 user.getRoles().stream()
-                        .map(role -> role.getName())
+                        .map(role -> role.getName().name())
                         .collect(Collectors.toSet()),
                 user.getCreatedAt()
         );

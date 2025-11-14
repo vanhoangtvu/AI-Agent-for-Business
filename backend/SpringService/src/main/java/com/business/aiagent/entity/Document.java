@@ -24,6 +24,10 @@ public class Document {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
     
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "business_owner_id")
+    private User businessOwner; // Nếu là tài liệu doanh nghiệp
+    
     @Column(nullable = false, length = 255)
     private String fileName;
     
@@ -42,6 +46,10 @@ public class Document {
     
     @Column(length = 100)
     private String category;
+    
+    @Enumerated(EnumType.STRING)
+    @Column(length = 50)
+    private DocumentType documentType; // Loại tài liệu doanh nghiệp
     
     @Column(length = 500)
     private String tags;
@@ -66,5 +74,19 @@ public class Document {
     
     public enum ProcessStatus {
         PENDING, PROCESSING, COMPLETED, FAILED
+    }
+    
+    public enum DocumentType {
+        PRODUCT_MANUAL,      // Hướng dẫn sản phẩm
+        BUSINESS_PLAN,       // Kế hoạch kinh doanh
+        FINANCIAL_REPORT,    // Báo cáo tài chính
+        MARKETING_MATERIAL,  // Tài liệu marketing
+        POLICY,              // Chính sách
+        CONTRACT,            // Hợp đồng
+        INVOICE,             // Hóa đơn
+        RESEARCH,            // Nghiên cứu thị trường
+        TRAINING,            // Đào tạo
+        INTERNAL_DOC,        // Tài liệu nội bộ
+        OTHER                // Khác
     }
 }

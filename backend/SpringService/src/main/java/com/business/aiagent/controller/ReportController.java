@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/reports")
 @RequiredArgsConstructor
-@Tag(name = "📊 Strategic Reports", description = "API tạo và quản lý báo cáo chiến lược")
+@Tag(name = "📊 Strategic Reports", description = "Create and manage strategic reports")
 public class ReportController {
     
     private final StrategicReportService reportService;

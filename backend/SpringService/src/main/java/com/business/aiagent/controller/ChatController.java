@@ -19,7 +19,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/chat")
 @RequiredArgsConstructor
-@Tag(name = "💬 Chat & Conversations", description = "API chat với AI và quản lý cuộc trò chuyện")
+@Tag(name = "Chat & Conversations", description = "Chat with AI and manage conversations")
 public class ChatController {
     
     private final ConversationService conversationService;

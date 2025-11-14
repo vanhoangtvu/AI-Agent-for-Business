@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/activities")
 @RequiredArgsConstructor
-@Tag(name = "📝 Activity Logs", description = "API theo dõi hoạt động người dùng")
+@Tag(name = "Activity Logs", description = "API theo dõi hoạt động người dùng")
 public class ActivityLogController {
     
     private final ActivityLogService activityLogService;

@@ -51,12 +51,12 @@ public class AuthService {
                 .active(true)
                 .build();
         
-        // Gán role USER mặc định
-        Role userRole = roleRepository.findByName("ROLE_USER")
+        // Gán role CUSTOMER mặc định cho user mới đăng ký
+        Role userRole = roleRepository.findByName(Role.RoleName.CUSTOMER)
                 .orElseGet(() -> {
                     Role newRole = Role.builder()
-                            .name("ROLE_USER")
-                            .description("Default user role")
+                            .name(Role.RoleName.CUSTOMER)
+                            .description("Customer role")
                             .build();
                     return roleRepository.save(newRole);
                 });
@@ -80,7 +80,7 @@ public class AuthService {
                 .id(user.getId())
                 .username(user.getUsername())
                 .email(user.getEmail())
-                .roles(user.getRoles().stream().map(Role::getName).collect(Collectors.toSet()))
+                .roles(user.getRoles().stream().map(r -> r.getName().name()).collect(Collectors.toSet()))
                 .build();
     }
     
@@ -100,7 +100,7 @@ public class AuthService {
                 .id(user.getId())
                 .username(user.getUsername())
                 .email(user.getEmail())
-                .roles(user.getRoles().stream().map(Role::getName).collect(Collectors.toSet()))
+                .roles(user.getRoles().stream().map(r -> r.getName().name()).collect(Collectors.toSet()))
                 .build();
     }
 }
