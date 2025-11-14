@@ -1,9 +1,9 @@
 # 🤖 AI Agent for Business
 
 > **Đồ Án Chuyên Ngành - Đại Học Trà Vinh**
-> 
+>
 > Hệ thống AI thông minh hỗ trợ doanh nghiệp trong việc chăm sóc khách hàng, tư vấn sản phẩm và đề xuất chiến lược kinh doanh dựa trên dữ liệu nội bộ.
-> 
+>
 > **Sinh viên thực hiện:** Nguyễn Văn Hoàng  
 > **MSSV:** 110122078  
 > **Khoa:** Công Nghệ Thông Tin  
@@ -45,701 +45,293 @@
 
 ### Điểm Nổi Bật
 
-✅ **Kiến trúc Microservices**: Tách biệt frontend, backend và AI service  
+✅ **Tách bạch rõ ràng hai tầng dữ liệu**:
+- MySQL: dữ liệu cấu trúc (users, documents metadata, conversations, reports, logs)
+- Vector DB: embeddings + text chunks cho RAG, chỉ do Python AI Service truy cập
+
+✅ **Kiến trúc đa service**: Frontend (Next.js) – Backend (Spring Boot) – AI Service (FastAPI)  
 ✅ **RAG-Powered**: Kết hợp tìm kiếm vector với Gemini AI  
-✅ **Real-time Communication**: WebSocket cho chat tức thì  
-✅ **Multi-format Support**: Xử lý PDF, DOC, DOCX, TXT, Excel  
+✅ **Real-time Communication**: Hỗ trợ real-time chat (WebSocket hoặc long-polling tuỳ cấu hình)  
+✅ **Đa định dạng**: Xử lý PDF, DOC/DOCX, TXT, Excel  
 ✅ **Scalable & Secure**: JWT authentication, RBAC, Redis caching  
 
 ---
 
 ## 🏗️ Kiến Trúc Hệ Thống
 
-```
+```text
 ┌─────────────────────────────────────────────────────────────────┐
 │                         USER INTERFACE                          │
-│                   Next.js 14 + TypeScript                       │
+│                     Next.js 14 + TypeScript                     │
 └───────────────────────────┬─────────────────────────────────────┘
                             │
-                            │ REST API / WebSocket
+                            │  REST API / (WebSocket)
                             │
 ┌───────────────────────────▼─────────────────────────────────────┐
-│                      BACKEND SERVICE                            │
+│                         BACKEND API                             │
 │                  Spring Boot 3.x + Java 17                      │
-│  ┌──────────────┐ ┌──────────────┐ ┌──────────────────────┐   │
-│  │   Document   │ │   Chatbot    │ │  Strategic Analysis  │   │
-│  │  Management  │ │   Service    │ │       Service        │   │
-│  └──────────────┘ └──────────────┘ └──────────────────────┘   │
-└───────────┬─────────────────────┬────────────────────────┬─────┘
-            │                     │                        │
-            │                     │                        │
-   ┌────────▼────────┐   ┌────────▼────────┐    ┌────────▼────────┐
-   │  MySQL 8.0      │   │  Redis Cache    │    │   AI Service    │
-   │  + Vector Store │   │  + Session Mgmt │    │  Python FastAPI │
-   └─────────────────┘   └─────────────────┘    │  + Gemini API   │
-                                                 │  + RAG Engine   │
-                                                 └─────────────────┘
+│                                                                 │
+│  - Quản lý người dùng, phân quyền (RBAC)                        │
+│  - Quản lý tài liệu (metadata)                                  │
+│  - Quản lý hội thoại & tin nhắn                                 │
+│  - Quản lý báo cáo chiến lược                                   │
+│  - Ghi log hoạt động                                            │
+│  - Giao tiếp với AI Service (Python) qua REST                   │
+└───────────┬───────────────────────────────┬─────────────────────┘
+            │                               │
+            │                               │ HTTP (internal)
+            │                               ▼
+   ┌────────▼────────┐            ┌───────────────────────────────┐
+   │   MySQL 8.0     │            │        AI SERVICE             │
+   │ (Structured DB) │            │   Python 3.11 + FastAPI       │
+   │                 │            │   + Gemini API + RAG Engine   │
+   └────────┬────────┘            │                               │
+            │                     │  - Xử lý tài liệu: extract,   │
+            │                     │    chunk, sinh embeddings     │
+            │                     │  - Truy cập Vector DB         │
+            │                     │  - Thực hiện RAG + gọi LLM    │
+            │                     └───────────┬───────────────────┘
+            │                                 │
+            │                                 │
+            ▼                                 ▼
+   ┌────────────────┐               ┌────────────────────────────┐
+   │  Redis Cache   │               │     Vector Database        │
+   │ (sessions,     │               │ (ChromaDB/Qdrant, lưu      │
+   │  caching)      │               │  embeddings + text chunks) │
+   └────────────────┘               └────────────────────────────┘
 ```
+
+> **Quan trọng:**
+>
+> * Spring Boot **chỉ kết nối trực tiếp MySQL + Redis**
+> * Python FastAPI **kết nối trực tiếp Vector DB và (nếu cần) đọc một phần từ MySQL qua API**
+> * Spring Boot KHÔNG trực tiếp query Vector DB, mà luôn gọi qua AI Service.
 
 ---
 
 ## 🧩 Thành Phần Chính
 
-| Thành Phần | Công Nghệ | Chức Năng Chính |
-|-----------|-----------|-----------------|
-| **Frontend** | Next.js 14 + TypeScript | Giao diện người dùng, SSR/SSG, real-time chat |
-| **Backend** | Spring Boot 3.x + Java 17 | Business logic, API, security, database |
-| **AI Service** | Python 3.11 + FastAPI | Xử lý RAG, tích hợp Gemini API |
-| **Database** | MySQL 8.0 + Vector Extensions | Lưu trữ dữ liệu và vector embeddings |
-| **Cache** | Redis 7.x | Session management, caching |
+| Thành Phần     | Công Nghệ                 | Chức Năng Chính                                                              |
+| -------------- | ------------------------- | ---------------------------------------------------------------------------- |
+| **Frontend**   | Next.js 14 + TypeScript   | Giao diện người dùng, trang dashboard, quản lý tài liệu, màn hình chat       |
+| **Backend**    | Spring Boot 3.x + Java 17 | Business logic, REST API, bảo mật, truy cập MySQL, ghi logs, gọi AI Service  |
+| **AI Service** | Python 3.11 + FastAPI     | Xử lý RAG, sinh embeddings, gọi Gemini API, truy vấn Vector DB               |
+| **MySQL**      | MySQL 8.0                 | Lưu users, roles, documents metadata, conversations, messages, reports, logs |
+| **Vector DB**  | ChromaDB / Qdrant (gợi ý) | Lưu embeddings + text chunks, dùng cho semantic search & RAG                 |
+| **Cache**      | Redis 7.x                 | Session management, caching dữ liệu đọc nhiều                                |
 
 ---
 
 ## 🔧 Chức Năng Chi Tiết
 
-### 1. 📁 Module Quản Lý Tài Liệu
+### 1. 📁 Module Quản Lý Tài Liệu (Spring Boot + FastAPI + Vector DB)
 
-#### Upload & Xử Lý Đa Định Dạng
-- ✅ Hỗ trợ format: **PDF, DOC, DOCX, TXT, Excel**
-- ✅ Tự động trích xuất văn bản và metadata
-- ✅ **Chunking thông minh** theo ngữ nghĩa
-- ✅ **Vector hóa** và lưu trữ tối ưu
+#### 1.1. Quản lý metadata tài liệu (Spring Boot + MySQL)
 
-#### Quản Lý Knowledge Base
-- 🏷️ Phân loại theo **category**, **tags**
-- 🔍 Tìm kiếm nâng cao: **full-text + vector search**
-- 📝 Version control cho tài liệu
-- 🔄 Bulk operations xử lý hàng loạt
+* Lưu metadata tài liệu vào MySQL:
+
+  * Tên, loại file, kích thước, đường dẫn lưu trữ.
+  * Người upload, category, tags.
+  * Trạng thái xử lý: `PENDING`, `PROCESSING`, `COMPLETED`, `FAILED`.
+  * Thông tin vector hoá: `vectorized`, `chunk_count`, `total_tokens`.
+* Phân quyền truy cập:
+
+  * Tài liệu của riêng user.
+  * Tài liệu được chia sẻ cho user khác.
+* API:
+
+  * Upload tài liệu (Spring nhận file, lưu metadata, gọi AI Service xử lý).
+  * Danh sách tài liệu theo quyền user.
+  * Xem chi tiết metadata tài liệu.
+  * Xoá/cập nhật metadata (theo role).
+
+#### 1.2. Xử lý nội dung & embeddings (Python + Vector DB)
+
+* Python AI Service nhận:
+
+  * `document_id` + `file_path` từ Spring.
+* Thực hiện:
+
+  * Trích xuất text.
+  * Chunk văn bản hợp lý.
+  * Sinh embeddings (vector).
+  * Lưu `documents`, `embeddings`, `metadatas` vào Vector DB.
+* Cập nhật lại MySQL thông qua API hoặc query:
+
+  * `status = COMPLETED / FAILED`
+  * `vectorized = TRUE/FALSE`
+  * `chunk_count`, `processed_at`.
+
+> 👉 **Spring không trực tiếp lưu embeddings**, mọi vector hoá được xử lý & lưu bởi Python + Vector DB.
 
 ---
 
-### 2. 💬 Module Chatbot Thông Minh
+### 2. 💬 Module Chatbot Thông Minh (Spring Boot + FastAPI)
 
-#### RAG-Powered Conversations
+#### 2.1. Quản lý hội thoại & tin nhắn (Spring Boot + MySQL)
 
-**Luồng xử lý:**
+* Bảng `conversations`:
+
+  * Lưu 1 phiên chat giữa user ↔ AI.
+* Bảng `messages`:
+
+  * Lưu từng tin nhắn (USER/AI).
+  * `source_documents` (JSON): tài liệu/đoạn đã dùng để trả lời.
+
+Backend Spring:
+
+* Nhận message từ frontend.
+* Tạo mới conversation hoặc dùng conversation hiện tại.
+* Lưu message của user.
+* Gọi API sang Python AI Service để lấy câu trả lời.
+* Lưu message AI + nguồn (source documents) vào MySQL.
+* Trả kết quả cho frontend.
+
+#### 2.2. Hội thoại RAG (Python AI + Vector DB)
+
+**Luồng xử lý chuẩn (đã cập nhật):**
+
+```text
+1. User gửi câu hỏi → Spring Boot
+2. Spring Boot lưu message USER vào MySQL
+3. Spring Boot gọi Python AI Service: (user_id, conversation_id, question)
+4. Python:
+   - Tạo embedding câu hỏi
+   - Query Vector DB (Chroma) → lấy top-k chunks liên quan
+   - Ghép context từ chunks + câu hỏi → tạo prompt
+   - Gọi Gemini API → sinh câu trả lời
+   - Trả về: answer + danh sách nguồn (doc_id, chunk_index, score)
+5. Spring Boot:
+   - Lưu message AI + source_documents (JSON) vào MySQL
+   - Trả reply cho frontend
 ```
-1. User question → Spring Boot → Vector search → Tìm documents liên quan
-2. Spring Boot → Python Service (gửi question + context)
-3. Python Service → Gemini API → Generated response
-4. Python Service → Spring Boot → React → User
-```
 
-#### Tính Năng Chat Nâng Cao
-- ⚡ **Real-time messaging** với WebSocket
-- 💾 **Conversation history** lưu trữ đầy đủ
-- 😊 **Sentiment analysis** tự động
-- ⚡ **Quick responses** với templates
+> ❌ Spring **không làm vector search** trực tiếp.
+> ✅ Toàn bộ vector search & RAG nằm trong **Python AI Service + Vector DB**.
 
 ---
 
-### 3. 📊 Module Đề Xuất Chiến Lược
+### 3. 📊 Module Đề Xuất Chiến Lược (Strategic Reports)
 
-#### Phân Tích Dữ Liệu Kinh Doanh
-- 📈 Thu thập metrics tự động
-- 📉 Trend analysis theo thời gian
-- 🔄 Comparative analysis với industry benchmarks
+* Backend Spring:
 
-#### AI Strategic Insights
-- 🎯 **SWOT analysis** tự động
-- 🔍 **Market opportunity identification**
-- ⚠️ **Risk assessment** và mitigation suggestions
+  * Nhận yêu cầu phân tích chiến lược từ user.
+  * Thu thập hoặc nhận input metrics (doanh thu, chi phí, khách hàng…).
+  * Gửi metrics này sang Python AI Service để phân tích.
+* Python AI Service:
 
-#### Báo Cáo Thông Minh
-- 📅 **Automated reporting** định kỳ
-- 📊 **Custom report generation**
-- 📉 **Data visualization** interactive
+  * Build prompt phân tích chiến lược.
+  * Gọi Gemini / LLM.
+  * Trả về:
+
+    * SWOT analysis.
+    * Recommendations.
+    * Market insights.
+    * Risk assessment.
+* Spring Boot:
+
+  * Lưu kết quả vào bảng `strategic_reports`.
+  * Cho phép user xem lại danh sách & chi tiết báo cáo.
 
 ---
 
-### 4. ⚙️ Module Quản Trị Hệ Thống
+### 4. ⚙️ Module Quản Trị Hệ Thống (Spring Boot)
 
-#### User & Role Management
-- 👥 **Role-based access control (RBAC)**
-- 📝 **Activity logging** và audit trails
-- 🔐 **Session management** bảo mật
+* Quản lý người dùng, roles, phân quyền.
+* Quản lý tài liệu & quyền truy cập.
+* Nhật ký hoạt động (`activity_logs`):
 
-#### System Configuration
-- 🤖 AI model settings linh hoạt
-- 🔑 API keys management an toàn
-- ⚡ Performance tuning parameters
+  * LOGIN, UPLOAD_DOCUMENT, SEND_MESSAGE, VIEW_REPORT, v.v.
+* Cấu hình 1 số tham số hệ thống (giới hạn dung lượng file, v.v.).
 
 ---
 
 ## 🔄 Luồng Hoạt Động
 
-### A. Luồng Upload & Xử Lý Tài Liệu
+### A. Luồng Upload & Xử Lý Tài Liệu (CẬP NHẬT THEO 2 CSDL)
 
 ```mermaid
 sequenceDiagram
     participant U as User
-    participant R as React
+    participant F as Frontend (Next.js)
     participant S as Spring Boot
-    participant P as Python Service
     participant D as MySQL
+    participant P as Python AI Service
+    participant V as Vector DB
 
-    U->>R: Upload file
-    R->>S: POST /api/documents/upload
-    S->>D: Lưu metadata document
-    S->>P: Gửi file để xử lý
-    P->>P: Text extraction & chunking
+    U->>F: Upload file
+    F->>S: POST /api/documents (multipart)
+    S->>D: Lưu metadata (status=PROCESSING)
+    S->>P: Gửi document_id + file_path
+    P->>P: Extract text & chunk
     P->>P: Generate embeddings
-    P->>D: Lưu vectors
-    P->>S: Cập nhật status
-    S->>R: Upload thành công
-    R->>U: Hiển thị kết quả
+    P->>V: Lưu chunks + embeddings (Vector DB)
+    P->>S: Gửi kết quả (chunk_count, success/fail)
+    S->>D: UPDATE documents (status, vectorized, chunk_count)
+    S->>F: Trả kết quả upload
+    F->>U: Hiển thị trạng thái xử lý
 ```
+
+> Lưu ý: **embeddings & nội dung chunk được lưu ở Vector DB (`V`), không phải MySQL (`D`)**.
 
 ---
 
-### B. Luồng Xử Lý Câu Hỏi Người Dùng
+### B. Luồng Xử Lý Câu Hỏi Người Dùng (Chat RAG – CẬP NHẬT)
 
 ```mermaid
 sequenceDiagram
     participant U as User
-    participant R as React
+    participant F as Frontend
     participant S as Spring Boot
-    participant P as Python Service
-    participant G as Gemini API
     participant D as MySQL
+    participant P as Python AI Service
+    participant V as Vector DB
+    participant G as Gemini API
 
-    U->>R: Gửi message
-    R->>S: WebSocket message
-    S->>D: Vector search → relevant docs
-    S->>P: Gửi question + context
-    P->>P: Build optimized prompt
-    P->>G: Gọi Gemini API
-    G->>P: Trả response
-    P->>S: Trả kết quả
-    S->>D: Lưu message & response
-    S->>R: Gửi response via WebSocket
-    R->>U: Hiển thị kết quả
+    U->>F: Nhập câu hỏi / message
+    F->>S: POST /api/chat/messages
+    S->>D: Lưu message USER (messages table)
+    S->>P: Gửi (user_id, conversation_id, question)
+    P->>V: Vector search trong Vector DB
+    V-->>P: Trả về các chunks liên quan
+    P->>G: Gửi context + question (prompt RAG)
+    G-->>P: Trả câu trả lời
+    P-->>S: Trả (answer + sources)
+    S->>D: Lưu message AI + source_documents JSON
+    S-->>F: Trả câu trả lời
+    F-->>U: Hiển thị message AI + nguồn tham khảo
 ```
 
 ---
 
-### C. Luồng Phân Tích Chiến Lược
+### C. Luồng Phân Tích Chiến Lược Kinh Doanh
 
 ```mermaid
 sequenceDiagram
     participant U as User
-    participant R as React
+    participant F as Frontend
     participant S as Spring Boot
-    participant P as Python Service
-    participant G as Gemini API
     participant D as MySQL
+    participant P as Python AI Service
+    participant G as Gemini API
 
-    U->>R: Yêu cầu phân tích chiến lược
-    R->>S: POST /api/strategic/analyze
-    S->>D: Thu thập business metrics
-    S->>P: Gửi data + analysis request
-    P->>P: Format data & build strategic prompt
-    P->>G: Gọi Gemini API
-    G->>P: Trả strategic insights
-    P->>S: Trả kết quả phân tích
-    S->>D: Lưu strategic insights
-    S->>R: Trả kết quả
-    R->>U: Hiển thị báo cáo
+    U->>F: Gửi yêu cầu phân tích chiến lược
+    F->>S: POST /api/strategic/analyze (metrics)
+    S->>P: Gửi metrics + loại phân tích
+    P->>G: Gọi Gemini với strategic prompt
+    G-->>P: Trả strategic insights
+    P-->>S: Trả kết quả phân tích
+    S->>D: Lưu vào strategic_reports
+    S-->>F: Trả kết quả
+    F-->>U: Hiển thị báo cáo chiến lược
 ```
 
 ---
 
 ## 💻 Công Nghệ Sử Dụng
 
-### Backend Stack
-- ☕ **Java 17** + **Spring Boot 3.2**
-- 🔐 **Spring Security** + JWT Authentication
-- 🗃️ **Spring Data JPA** + Hibernate
-- 🐬 **MySQL 8.0** với vector extensions
-- 🔄 **Redis** cho caching & session management
-- 🔌 **WebSocket + STOMP** real-time communication
-
-### AI Service Stack
-- 🐍 **Python 3.11** + **FastAPI**
-- 🤖 **Google Generative AI (Gemini API)**
-- 🧠 **Sentence Transformers** cho embeddings
-- 🐬 **MySQL Connector Python**
-- ⚡ **Uvicorn** ASGI server
-
-### Frontend Stack
-- ⚛️ **Next.js 14** (App Router) + **TypeScript**
-- 🔄 **Redux Toolkit** / **Zustand** state management
-- 🎨 **Tailwind CSS** styling
-- 🌐 **Axios** / **Fetch API** HTTP client
-- ⚡ **Server Components** & **Client Components**
-- 🔌 **WebSocket Client** real-time updates
-- 📊 **Chart.js** / **Recharts** data visualization
-- 🖼️ **Next.js Image Optimization**
-
-### DevOps & Deployment
-- 🐳 **Docker** + **Docker Compose**
-- 📦 **Maven** build automation
-- 🔧 **Git** version control
-- 🚀 **CI/CD** ready
-
----
-
-## 🚀 Cài Đặt & Chạy Dự Án
-
-### Yêu Cầu Hệ Thống
-
-- 🐳 Docker & Docker Compose
-- ☕ Java 17+
-- 🐍 Python 3.11+
-- 📦 Node.js 18+
-- 🔧 Maven 3.8+
-
-### Cài Đặt Nhanh
-
-#### 1️⃣ Clone Repository
-
-```bash
-git clone https://github.com/vanhoangtvu/AI-Agent-for-Business.git
-cd AI-Agent-for-Business
-```
-
-#### 2️⃣ Cấu Hình Environment Variables
-
-Tạo file `.env` ở thư mục root:
-
-```bash
-# Database Configuration
-MYSQL_ROOT_PASSWORD=your_root_password
-MYSQL_DATABASE=ai_agent_db
-MYSQL_USER=ai_agent_user
-MYSQL_PASSWORD=your_password
-
-# Redis Configuration
-REDIS_PASSWORD=your_redis_password
-
-# JWT Configuration
-JWT_SECRET=your_jwt_secret_key_here
-JWT_EXPIRATION=86400000
-
-# Gemini API Configuration
-GEMINI_API_KEY=your_gemini_api_key_here
-
-# Backend Configuration
-SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/ai_agent_db
-SPRING_REDIS_HOST=redis
-SPRING_REDIS_PORT=6379
-
-# AI Service Configuration
-PYTHON_SERVICE_URL=http://python-service:8000
-```
-
-#### 3️⃣ Chạy với Docker Compose
-
-```bash
-# Build và khởi động tất cả services
-docker-compose up -d
-
-# Kiểm tra logs
-docker-compose logs -f
-
-# Dừng services
-docker-compose down
-```
-
-#### 4️⃣ Chạy Từng Service Riêng Lẻ
-
-**Backend (Spring Boot):**
-```bash
-cd backend/SpringService
-mvn clean install
-mvn spring-boot:run
-```
-
-**AI Service (Python FastAPI):**
-```bash
-cd backend/pythonService
-pip install -r requirements.txt
-uvicorn main:app --reload --host 0.0.0.0 --port 8000
-```
-
-**Frontend (Next.js):**
-```bash
-cd frontend
-npm install
-npm run dev
-```
-
-### Truy Cập Ứng Dụng
-
-- 🌐 **Frontend**: http://localhost:3000
-- ⚙️ **Backend API**: http://localhost:8100
-- 🤖 **AI Service API**: http://localhost:8000
-- 📚 **API Docs (Swagger)**: http://localhost:8100/swagger-ui.html
-- 📖 **FastAPI Docs**: http://localhost:8000/docs
-
----
-
-## 📁 Cấu Trúc Thư Mục
-
-```
-AI-Agent-for-Business/
-│
-├── backend/
-│   ├── SpringService/              # Spring Boot Backend
-│   │   ├── src/
-│   │   │   ├── main/
-│   │   │   │   ├── java/
-│   │   │   │   │   └── com/aiagent/
-│   │   │   │   │       ├── config/          # Configuration classes
-│   │   │   │   │       ├── controller/      # REST Controllers
-│   │   │   │   │       ├── service/         # Business Logic
-│   │   │   │   │       ├── repository/      # Data Access Layer
-│   │   │   │   │       ├── model/           # Entity Models
-│   │   │   │   │       ├── dto/             # Data Transfer Objects
-│   │   │   │   │       ├── security/        # Security & JWT
-│   │   │   │   │       └── websocket/       # WebSocket Config
-│   │   │   │   └── resources/
-│   │   │   │       ├── application.yml
-│   │   │   │       └── application-prod.yml
-│   │   │   └── test/
-│   │   ├── pom.xml
-│   │   └── Dockerfile
-│   │
-│   └── pythonService/              # Python AI Service
-│       ├── app/
-│       │   ├── __init__.py
-│       │   ├── main.py             # FastAPI application
-│       │   ├── config.py           # Configuration
-│       │   ├── models/             # Data models
-│       │   ├── services/
-│       │   │   ├── rag_service.py       # RAG implementation
-│       │   │   ├── gemini_service.py    # Gemini API integration
-│       │   │   ├── embedding_service.py # Vector embeddings
-│       │   │   └── document_processor.py # Document processing
-│       │   ├── routers/            # API routes
-│       │   └── utils/              # Utility functions
-│       ├── requirements.txt
-│       └── Dockerfile
-│
-├── frontend/                       # Next.js Frontend
-│   ├── public/                    # Static assets
-│   │   ├── images/
-│   │   └── icons/
-│   ├── src/
-│   │   ├── app/                   # App Router (Next.js 14)
-│   │   │   ├── layout.tsx         # Root layout
-│   │   │   ├── page.tsx           # Home page
-│   │   │   ├── (auth)/            # Auth routes group
-│   │   │   │   ├── login/
-│   │   │   │   └── register/
-│   │   │   ├── dashboard/         # Dashboard routes
-│   │   │   ├── chat/              # Chat routes
-│   │   │   ├── documents/         # Document management
-│   │   │   ├── strategic/         # Strategic analysis
-│   │   │   └── api/               # API routes (optional)
-│   │   ├── components/            # React components
-│   │   │   ├── Chat/
-│   │   │   ├── Document/
-│   │   │   ├── Dashboard/
-│   │   │   ├── Strategic/
-│   │   │   └── Common/
-│   │   ├── lib/                   # Libraries & utilities
-│   │   │   ├── api/               # API clients
-│   │   │   ├── hooks/             # Custom hooks
-│   │   │   └── utils/             # Utility functions
-│   │   ├── store/                 # State management
-│   │   │   ├── slices/            # Redux slices
-│   │   │   └── store.ts           # Store configuration
-│   │   ├── types/                 # TypeScript types
-│   │   └── styles/                # Global styles
-│   │       └── globals.css
-│   ├── package.json
-│   ├── next.config.js
-│   ├── tsconfig.json
-│   ├── tailwind.config.js
-│   └── Dockerfile
-│
-├── docker-compose.yml
-├── .env.example
-├── .gitignore
-└── README.md
-```
-
----
-
-## 📚 API Documentation
-
-### Backend REST API Endpoints
-
-#### Authentication
-```
-POST   /api/auth/register          # Đăng ký tài khoản
-POST   /api/auth/login             # Đăng nhập
-POST   /api/auth/refresh           # Refresh token
-POST   /api/auth/logout            # Đăng xuất
-```
-
-#### Document Management
-```
-POST   /api/documents/upload       # Upload tài liệu
-GET    /api/documents              # Lấy danh sách tài liệu
-GET    /api/documents/{id}         # Lấy chi tiết tài liệu
-PUT    /api/documents/{id}         # Cập nhật tài liệu
-DELETE /api/documents/{id}         # Xóa tài liệu
-POST   /api/documents/search       # Tìm kiếm tài liệu
-```
-
-#### Chatbot
-```
-POST   /api/chat/message           # Gửi message
-GET    /api/chat/history           # Lấy lịch sử chat
-GET    /api/chat/conversations     # Lấy danh sách conversations
-DELETE /api/chat/{id}              # Xóa conversation
-WS     /ws/chat                    # WebSocket endpoint
-```
-
-#### Strategic Analysis
-```
-POST   /api/strategic/analyze      # Phân tích chiến lược
-GET    /api/strategic/reports      # Lấy danh sách báo cáo
-GET    /api/strategic/reports/{id} # Lấy chi tiết báo cáo
-POST   /api/strategic/metrics      # Cập nhật metrics
-GET    /api/strategic/insights     # Lấy insights
-```
-
-#### User Management
-```
-GET    /api/users                  # Lấy danh sách users (Admin)
-GET    /api/users/{id}             # Lấy thông tin user
-PUT    /api/users/{id}             # Cập nhật user
-DELETE /api/users/{id}             # Xóa user (Admin)
-PUT    /api/users/{id}/roles       # Cập nhật roles (Admin)
-```
-
----
-
-### AI Service API Endpoints
-
-#### Document Processing
-```
-POST   /api/v1/documents/process   # Xử lý document
-POST   /api/v1/documents/embed     # Generate embeddings
-```
-
-#### RAG Service
-```
-POST   /api/v1/rag/query           # RAG query
-POST   /api/v1/rag/search          # Vector search
-```
-
-#### Gemini Integration
-```
-POST   /api/v1/gemini/chat         # Chat với Gemini
-POST   /api/v1/gemini/analyze      # Phân tích với Gemini
-```
-
----
-
-## 🔐 Authentication & Security
-
-### JWT Token Flow
-
-```
-1. User login → Backend validates credentials
-2. Backend generates JWT access token + refresh token
-3. Frontend stores tokens (secure storage)
-4. All API calls include: Authorization: Bearer {token}
-5. Token expires → Use refresh token to get new access token
-```
-
-### Role-Based Access Control (RBAC)
-
-| Role | Permissions |
-|------|-------------|
-| **ADMIN** | Full system access, user management, all operations |
-| **MANAGER** | View all data, create/edit documents, generate reports |
-| **USER** | View own data, upload documents, use chatbot |
-| **GUEST** | Limited read-only access |
-
----
-
-## 🧪 Testing
-
-### Backend Tests
-```bash
-cd backend/SpringService
-mvn test
-mvn verify
-```
-
-### AI Service Tests
-```bash
-cd backend/pythonService
-pytest
-pytest --cov=app tests/
-```
-
-### Frontend Tests
-```bash
-cd frontend
-npm test              # Run Jest tests
-npm run test:e2e     # Run Playwright E2E tests
-npm run test:coverage
-```
-
----
-
-## 📊 Performance & Monitoring
-
-### Key Metrics
-- ⚡ API Response Time: < 200ms
-- 🔍 Vector Search: < 100ms
-- 💬 Chat Response: < 2s
-- 📁 Document Processing: < 5s per file
-
-### Monitoring Tools
-- **Spring Boot Actuator**: Health checks, metrics
-- **Redis Monitor**: Cache hit rates
-- **MySQL Slow Query Log**: Database optimization
-- **Application Logs**: Centralized logging
-
----
-
-## 🛠️ Troubleshooting
-
-### Common Issues
-
-#### 1. Database Connection Failed
-```bash
-# Kiểm tra MySQL service
-docker-compose ps mysql
-
-# Xem logs
-docker-compose logs mysql
-
-# Restart service
-docker-compose restart mysql
-```
-
-#### 2. Gemini API Error
-```bash
-# Kiểm tra API key
-echo $GEMINI_API_KEY
-
-# Test API connection
-curl -X POST https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent \
-  -H "Content-Type: application/json" \
-  -H "x-goog-api-key: $GEMINI_API_KEY"
-```
-
-#### 3. WebSocket Connection Failed
-```bash
-# Kiểm tra CORS configuration
-# Check application.yml: allowed-origins
-
-# Test WebSocket endpoint
-wscat -c ws://localhost:8080/ws/chat
-```
-
----
-
-## 🚧 Roadmap
-
-### Phase 1 (Current) ✅
-- [x] Basic infrastructure setup
-- [x] Document management
-- [x] Simple chatbot
-- [x] User authentication
-
-### Phase 2 (In Progress) 🚧
-- [ ] Advanced RAG implementation
-- [ ] Strategic analysis module
-- [ ] Real-time notifications
-- [ ] Advanced reporting
-
-### Phase 3 (Planned) 📋
-- [ ] Multi-language support (i18n)
-- [ ] Voice interaction
-- [ ] Mobile app (React Native / PWA)
-- [ ] Advanced analytics dashboard
-- [ ] Integration with popular CRM systems
-- [ ] Edge Runtime optimization
-
----
-
-## 🤝 Đóng Góp
-
-Chúng tôi hoan nghênh mọi đóng góp! Vui lòng:
-
-1. Fork repository
-2. Tạo branch mới (`git checkout -b feature/AmazingFeature`)
-3. Commit changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to branch (`git push origin feature/AmazingFeature`)
-5. Mở Pull Request
-
-### Code Style Guidelines
-- **Java**: Follow Google Java Style Guide
-- **Python**: Follow PEP 8
-- **TypeScript/Next.js**: Follow Airbnb Style Guide + Next.js Best Practices
-- **Commit Messages**: Follow Conventional Commits
-
----
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
----
-
-## 👥 Thông Tin Đồ Án
-
-### Sinh Viên Thực Hiện
-- **Họ và tên:** Nguyễn Văn Hoàng
-- **MSSV:** 110122078
-- **Lớp:** Kỹ Thuật Công Nghệ
-- **Khoa:** Công Nghệ Thông Tin
-- **Trường:** Đại Học Trà Vinh
-
-### Giáo Viên Hướng Dẫn
-- **Họ và tên:** ThS. TS. Nguyễn Bảo Ân
-- **Khoa:** Công Nghệ Thông Tin
-
-### Đề Tài
-**Xây dựng hệ thống AI Agent hỗ trợ doanh nghiệp chăm sóc khách hàng và đề xuất chiến lược**  
-(AI Agent for Business)
-
----
-
-## 📧 Liên Hệ
-
-- **Sinh viên:** Nguyễn Văn Hoàng
-- **Email:** 110122078@st.tvu.edu.vn
-- **GitHub:** [@vanhoangtvu](https://github.com/vanhoangtvu)
-- **Trường:** Đại Học Trà Vinh
-- **Repository:** [AI-Agent-for-Business](https://github.com/vanhoangtvu/AI-Agent-for-Business)
-- **Issues:** [GitHub Issues](https://github.com/vanhoangtvu/AI-Agent-for-Business/issues)
-
----
-
-## 🙏 Acknowledgments
-
-- [Spring Boot](https://spring.io/projects/spring-boot)
-- [Next.js](https://nextjs.org/)
-- [FastAPI](https://fastapi.tiangolo.com/)
-- [Google Generative AI](https://ai.google.dev/)
-- [Sentence Transformers](https://www.sbert.net/)
-- [Vercel](https://vercel.com/) - Next.js creators
-
----
-
-<div align="center">
-
-**Đồ Án Chuyên Ngành - Made with ❤️ by Nguyễn Văn Hoàng**
-
-🎓 Đại Học Trà Vinh - Khoa Công Nghệ Thông Tin
-
-⭐ Star us on GitHub — it helps!
-
-[Report Bug](https://github.com/vanhoangtvu/AI-Agent-for-Business/issues) · [Request Feature](https://github.com/vanhoangtvu/AI-Agent-for-Business/issues)
-
----
-
-© 2024-2025 Nguyễn Văn Hoàng - Đại Học Trà Vinh
-
-</div>
-
+### Backend Stack (Spring Boot)
+
+* ☕ **Java 17**, **Spring Boot 3.2**
+* 🔐 **Spring Security** + JWT Authentication
+* 🗃️ **Spring Data JPA** + Hibernate

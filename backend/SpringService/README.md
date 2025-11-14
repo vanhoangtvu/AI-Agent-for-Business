@@ -1,185 +1,169 @@
-# AI Agent Backend - Spring Boot Service
+# Spring Boot Backend Service
 
-## 📋 Tổng Quan
+Backend service cho AI Agent for Business system.
 
-Backend service được xây dựng bằng Spring Boot 3.2, cung cấp API RESTful và WebSocket cho hệ thống AI Agent.
+## 📋 Yêu Cầu
 
-## 🚀 Chạy Ứng Dụng
+- Java 17 hoặc cao hơn
+- Maven 3.6+
+- MySQL 8.0+
 
-### Yêu Cầu
-- Java 17+
-- Maven 3.8+
-- MySQL 8.0 (Database: `AI_Agent_db`, Password: `1111`)
-- Redis (optional - nếu dùng caching)
+## 🚀 Cài Đặt & Chạy
 
-### Build và Run
+### 1. Setup Database
+
+```bash
+# Đăng nhập MySQL
+mysql -u root -p
+
+# Nhập password: 1111
+
+# Chạy script khởi tạo database
+source src/main/resources/init-db.sql
+
+# Hoặc
+mysql -u root -p1111 < src/main/resources/init-db.sql
+```
+
+### 2. Cấu Hình
+
+File `src/main/resources/application.yml` đã được cấu hình sẵn với:
+- Database: `AI_Agent_db`
+- Username: `root`
+- Password: `1111`
+- Port: `8089` (Configured for server access)
+
+### 3. Build & Run
 
 ```bash
 # Build project
 mvn clean install
 
-# Run application
+# Chạy application
 mvn spring-boot:run
 
-# Hoặc run JAR file
-java -jar target/ai-agent-backend-1.0.0.jar
+# Hoặc chạy file JAR
+java -jar target/aiagent-1.0.0.jar
 ```
 
-### Truy Cập
-
-- **API Base URL**: http://localhost:8100/api
-- **Swagger UI**: http://localhost:8100/swagger-ui.html
-- **H2 Console** (dev): http://localhost:8100/h2-console
-- **Actuator**: http://localhost:8100/actuator
-
-## 📁 Cấu Trúc
-
-```
-src/main/java/com/aiagent/
-├── config/              # Configuration classes
-│   ├── DatabaseConfig.java
-│   ├── SecurityConfig.java
-│   ├── WebSocketConfig.java
-│   ├── AIServiceConfig.java
-│   └── RedisConfig.java
-├── controller/          # REST Controllers
-│   ├── api/
-│   │   ├── AuthController.java
-│   │   ├── ChatController.java
-│   │   ├── DocumentController.java
-│   │   ├── StrategicController.java
-│   │   └── UserController.java
-│   └── websocket/
-│       └── ChatWebSocketHandler.java
-├── service/             # Business Logic
-│   ├── impl/
-│   │   ├── AuthServiceImpl.java
-│   │   ├── ChatServiceImpl.java
-│   │   ├── DocumentServiceImpl.java
-│   │   └── StrategicServiceImpl.java
-│   ├── AuthService.java
-│   ├── ChatService.java
-│   ├── DocumentService.java
-│   ├── AIClientService.java
-│   └── VectorSearchService.java
-├── repository/          # Data Access Layer
-│   ├── UserRepository.java
-│   ├── DocumentRepository.java
-│   ├── ConversationRepository.java
-│   └── MessageRepository.java
-├── model/               # Entities & DTOs
-│   ├── entity/
-│   │   ├── User.java
-│   │   ├── Document.java
-│   │   └── Conversation.java
-│   └── dto/
-│       ├── AuthRequest.java
-│       ├── AuthResponse.java
-│       ├── ChatRequest.java
-│       ├── ChatResponse.java
-│       ├── DocumentRequest.java
-│       └── DocumentResponse.java
-├── security/            # Security & JWT
-│   ├── JwtService.java
-│   ├── JwtAuthenticationFilter.java
-│   ├── JwtAuthenticationEntryPoint.java
-│   └── CustomUserDetailsService.java
-├── exception/           # Exception Handling
-└── Application.java     # Main Application
-```
-
-## 🔐 Authentication
-
-API sử dụng JWT (JSON Web Token) để xác thực.
-
-### Endpoints
-
-```http
-POST /api/auth/register    # Đăng ký
-POST /api/auth/login       # Đăng nhập
-POST /api/auth/refresh     # Refresh token
-POST /api/auth/logout      # Đăng xuất
-```
-
-### Example Request
-
-```bash
-# Login
-curl -X POST http://localhost:8100/api/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{
-    "email": "user@example.com",
-    "password": "password123"
-  }'
-
-# Sử dụng token
-curl -X GET http://localhost:8100/api/documents \
-  -H "Authorization: Bearer YOUR_TOKEN_HERE"
-```
+**Server Access:**
+Application sẽ chạy trên port `8089` và cho phép truy cập từ tất cả network interfaces (`0.0.0.0`)
 
 ## 📚 API Endpoints
 
-### Authentication
-- `POST /api/auth/register` - Đăng ký tài khoản
-- `POST /api/auth/login` - Đăng nhập
-- `POST /api/auth/refresh` - Refresh token
-- `POST /api/auth/logout` - Đăng xuất
+### Authentication APIs
 
-### Documents
-- `GET /api/documents` - Lấy danh sách tài liệu
-- `GET /api/documents/{id}` - Lấy chi tiết tài liệu
-- `POST /api/documents/upload` - Upload tài liệu
-- `PUT /api/documents/{id}` - Cập nhật tài liệu
-- `DELETE /api/documents/{id}` - Xóa tài liệu
-- `POST /api/documents/search` - Tìm kiếm tài liệu
+#### Register
+```http
+POST /api/auth/register
+Content-Type: application/json
 
-### Chat
-- `POST /api/chat/message` - Gửi message
-- `GET /api/chat/conversations` - Lấy danh sách conversations
-- `GET /api/chat/conversations/{id}` - Lấy chi tiết conversation
-- `DELETE /api/chat/conversations/{id}` - Xóa conversation
-- `WS /ws/chat` - WebSocket endpoint
-
-### Strategic Analysis
-- `POST /api/strategic/analyze` - Phân tích chiến lược
-- `GET /api/strategic/reports` - Lấy danh sách báo cáo
-- `GET /api/strategic/reports/{id}` - Lấy chi tiết báo cáo
-
-### Users (Admin)
-- `GET /api/users` - Lấy danh sách users
-- `GET /api/users/{id}` - Lấy thông tin user
-- `PUT /api/users/{id}` - Cập nhật user
-- `DELETE /api/users/{id}` - Xóa user
-
-## ⚙️ Configuration
-
-File `application.yml` chứa cấu hình:
-
-```yaml
-spring:
-  datasource:
-    url: jdbc:mysql://localhost:3306/AI_Agent_db
-    username: root
-    password: 1111
-
-app:
-  jwt:
-    secret: your_jwt_secret
-    expiration: 86400000  # 24 hours
-  
-  ai-service:
-    url: http://localhost:8000
+{
+  "username": "user1",
+  "email": "user1@example.com",
+  "password": "password123",
+  "fullName": "User One",
+  "phone": "0123456789"
+}
 ```
 
-## 🔧 Dependencies Chính
+#### Login
+```http
+POST /api/auth/login
+Content-Type: application/json
 
-- Spring Boot 3.2.0
-- Spring Security + JWT
-- Spring Data JPA + MySQL
-- Spring WebSocket
-- Spring Data Redis
-- Lombok
-- Springdoc OpenAPI (Swagger)
+{
+  "username": "admin",
+  "password": "admin123"
+}
+```
+
+Response:
+```json
+{
+  "token": "eyJhbGciOiJIUzUxMiJ9...",
+  "type": "Bearer",
+  "id": 1,
+  "username": "admin",
+  "email": "admin@aiagent.com",
+  "roles": ["ROLE_ADMIN"]
+}
+```
+
+### Sử Dụng Token
+
+Thêm header vào các request:
+```http
+Authorization: Bearer {token}
+```
+
+## 📖 API Documentation
+
+Swagger UI có sẵn tại:
+```
+http://localhost:8089/swagger-ui.html
+# Hoặc từ server: http://YOUR_SERVER_IP:8089/swagger-ui.html
+```
+
+OpenAPI JSON:
+```
+http://localhost:8089/v3/api-docs
+```
+
+## 🌐 Server Configuration
+
+Application được cấu hình để chạy trên server:
+- **Port:** 8089
+- **Binding Address:** 0.0.0.0 (Allow all network interfaces)
+- **CORS:** Cho phép tất cả origins (*)
+- **Public endpoints:** `/api/auth/**`, `/swagger-ui/**`
+
+## 🗂️ Cấu Trúc Project
+
+```
+src/main/java/com/business/aiagent/
+├── config/              # Configuration classes
+│   └── SecurityConfig.java
+├── controller/          # REST Controllers
+│   └── AuthController.java
+├── dto/                 # Data Transfer Objects
+│   ├── AuthResponse.java
+│   ├── LoginRequest.java
+│   └── RegisterRequest.java
+├── entity/              # JPA Entities
+│   ├── User.java
+│   ├── Role.java
+│   ├── Document.java
+│   ├── Conversation.java
+│   ├── Message.java
+│   ├── StrategicReport.java
+│   └── ActivityLog.java
+├── repository/          # JPA Repositories
+│   ├── UserRepository.java
+│   ├── RoleRepository.java
+│   ├── DocumentRepository.java
+│   ├── ConversationRepository.java
+│   ├── MessageRepository.java
+│   ├── StrategicReportRepository.java
+│   └── ActivityLogRepository.java
+├── security/            # Security components
+│   ├── JwtTokenProvider.java
+│   ├── JwtAuthenticationFilter.java
+│   └── CustomUserDetailsService.java
+├── service/             # Business Logic
+│   └── AuthService.java
+└── AIAgentApplication.java  # Main class
+```
+
+## 🔧 Technologies
+
+- **Spring Boot 3.2.0**
+- **Spring Security** - Authentication & Authorization
+- **Spring Data JPA** - Database operations
+- **JWT (jjwt 0.11.5)** - Token-based auth
+- **MySQL 8.0** - Database
+- **Lombok** - Reduce boilerplate code
+- **SpringDoc OpenAPI** - API documentation
 
 ## 🧪 Testing
 
@@ -187,119 +171,49 @@ app:
 # Run tests
 mvn test
 
-# Run tests với coverage
-mvn clean verify
+# Run tests with coverage
+mvn test jacoco:report
 ```
 
-## 📝 Database Schema
+## 🔐 Default Accounts
 
-### Users
-```sql
-CREATE TABLE users (
-    id BIGINT PRIMARY KEY AUTO_INCREMENT,
-    username VARCHAR(100) NOT NULL UNIQUE,
-    email VARCHAR(150) NOT NULL UNIQUE,
-    password VARCHAR(255) NOT NULL,
-    full_name VARCHAR(100),
-    phone_number VARCHAR(20),
-    active BOOLEAN DEFAULT TRUE,
-    created_at TIMESTAMP,
-    updated_at TIMESTAMP
-);
-```
+### Admin Account
+- Username: `admin`
+- Password: `admin123`
+- Role: `ROLE_ADMIN`
 
-### Documents
-```sql
-CREATE TABLE documents (
-    id BIGINT PRIMARY KEY AUTO_INCREMENT,
-    user_id BIGINT NOT NULL,
-    file_name VARCHAR(255) NOT NULL,
-    file_path VARCHAR(500) NOT NULL,
-    file_type VARCHAR(100),
-    file_size BIGINT,
-    title VARCHAR(500),
-    description TEXT,
-    category VARCHAR(100),
-    status VARCHAR(50),
-    created_at TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users(id)
-);
-```
+## 📝 Notes
 
-### Conversations & Messages
-```sql
-CREATE TABLE conversations (
-    id BIGINT PRIMARY KEY AUTO_INCREMENT,
-    user_id BIGINT NOT NULL,
-    title VARCHAR(255),
-    active BOOLEAN DEFAULT TRUE,
-    last_message_at TIMESTAMP,
-    created_at TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users(id)
-);
-
-CREATE TABLE messages (
-    id BIGINT PRIMARY KEY AUTO_INCREMENT,
-    conversation_id BIGINT NOT NULL,
-    role VARCHAR(50) NOT NULL,
-    content TEXT NOT NULL,
-    context TEXT,
-    sentiment VARCHAR(50),
-    confidence DOUBLE,
-    created_at TIMESTAMP,
-    FOREIGN KEY (conversation_id) REFERENCES conversations(id)
-);
-```
+- JWT token expires sau 24 giờ
+- File upload max size: 10MB
+- Database tự động tạo schema khi chạy lần đầu (ddl-auto: update)
+- CORS được cấu hình cho phép tất cả origins (phù hợp cho server)
+- Application chạy trên port 8089 với binding address 0.0.0.0
 
 ## 🐛 Troubleshooting
 
-### Database Connection Error
-```bash
-# Kiểm tra MySQL đang chạy
-mysql -u root -p
-
-# Tạo database nếu chưa có
-CREATE DATABASE AI_Agent_db;
+### Lỗi kết nối database
 ```
-
-### Port đã được sử dụng
-```bash
-# Port hiện tại: 8100
-# Thay đổi port trong application.yml nếu cần
-server:
-  port: 8100
+Error: Cannot create PoolableConnectionFactory
 ```
+- Kiểm tra MySQL đang chạy
+- Kiểm tra username/password trong `application.yml`
+- Kiểm tra database `AI_Agent_db` đã được tạo
 
-## 👨‍💻 Development
-
-```bash
-# Enable development mode
-spring:
-  profiles:
-    active: dev
-
-# Hot reload
-mvn spring-boot:run -Dspring-boot.run.jvmArguments="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005"
+### Lỗi port đã được sử dụng
 ```
-
-## 📦 Build Production
-
-```bash
-# Build JAR
-mvn clean package -DskipTests
-
-# Build Docker image
-docker build -t ai-agent-backend .
-
-# Run Docker container
-docker run -p 8080:8080 ai-agent-backend
+Error: Port 8089 is already in use
 ```
+- Đổi port trong `application.yml`: `server.port: 8090`
+- Hoặc kill process đang dùng port 8089: `sudo lsof -ti:8089 | xargs kill -9`
 
-## 📄 License
+### Lỗi JWT
+```
+Error: JWT signature does not match
+```
+- Xóa token cũ và login lại
+- Kiểm tra `jwt.secret` trong `application.yml`
 
-MIT License - Nguyễn Văn Hoàng - Đại Học Trà Vinh
+## 📫 Contact
 
----
-
-Made with ❤️ by Nguyễn Văn Hoàng
-
+Nguyễn Văn Hoàng - 110122078
