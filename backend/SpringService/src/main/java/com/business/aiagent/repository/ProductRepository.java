@@ -54,4 +54,8 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     
     @Query("SELECT COUNT(p) FROM Product p WHERE p.isActive = true AND p.category.id = :categoryId")
     Long countByCategory(@Param("categoryId") Long categoryId);
+    
+    // Fetch with collections separately to avoid MultipleBagFetchException
+    @Query("SELECT DISTINCT p FROM Product p LEFT JOIN FETCH p.imageUrls WHERE p.id = :id")
+    Optional<Product> findByIdWithImageUrls(@Param("id") Long id);
 }

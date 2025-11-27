@@ -48,6 +48,17 @@ public class OrderController {
         return ResponseEntity.ok(orders);
     }
     
+    @GetMapping("/admin/all")
+    @Operation(summary = "Get all orders", description = "ADMIN/BUSINESS - View all orders")
+    @RequirePermission(Role.Permission.ORDER_UPDATE)
+    public ResponseEntity<Page<OrderResponse>> getAllOrders(
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "20") int size
+    ) {
+        Page<OrderResponse> orders = orderService.getAllOrders(page, size);
+        return ResponseEntity.ok(orders);
+    }
+    
     @GetMapping("/{id}")
     @Operation(summary = "Get order details")
     @RequirePermission(Role.Permission.ORDER_READ)
@@ -55,6 +66,15 @@ public class OrderController {
             @PathVariable Long id,
             Authentication authentication) {
         OrderResponse order = orderService.getOrder(id, authentication.getName());
+        return ResponseEntity.ok(order);
+    }
+    
+    @GetMapping("/admin/{id}")
+    @Operation(summary = "Get order details for admin", description = "ADMIN/BUSINESS - View any order")
+    @RequirePermission(Role.Permission.ORDER_UPDATE)
+    public ResponseEntity<OrderResponse> getOrderByIdForAdmin(
+            @PathVariable Long id) {
+        OrderResponse order = orderService.getOrderByIdForAdmin(id);
         return ResponseEntity.ok(order);
     }
     
@@ -114,4 +134,45 @@ public class OrderController {
         OrderResponse order = orderService.updatePaymentStatus(id, status, authentication.getName());
         return ResponseEntity.ok(order);
     }
+    
+    @DeleteMapping("/{id}")
+    @Operation(summary = "Delete order", description = "ADMIN - Delete order permanently")
+    @RequirePermission(Role.Permission.ORDER_DELETE)
+    public ResponseEntity<Void> deleteOrder(
+        @PathVariable Long id,
+        Authentication authentication
+    ) {
+        orderService.deleteOrder(id, authentication.getName());
+        return ResponseEntity.noContent().build();
+    }
+    
+    @PatchMapping("/{id}/shipping-info")
+    @Operation(summary = "Update shipping info", description = "BUSINESS/ADMIN - Update shipping address and contact")
+    @RequirePermission(Role.Permission.ORDER_UPDATE)
+    public ResponseEntity<OrderResponse> updateShippingInfo(
+        @PathVariable Long id,
+        @RequestParam(required = false) String shippingAddress,
+        @RequestParam(required = false) String shippingCity,
+        @RequestParam(required = false) String shippingDistrict,
+        @RequestParam(required = false) String shippingWard,
+        @RequestParam(required = false) String shippingEmail,
+        Authentication authentication
+    ) {
+        OrderResponse order = orderService.updateShippingInfo(id, shippingAddress, shippingCity, 
+            shippingDistrict, shippingWard, shippingEmail, authentication.getName());
+        return ResponseEntity.ok(order);
+    }
+    
+    @PatchMapping("/{id}/note")
+    @Operation(summary = "Update order note", description = "BUSINESS/ADMIN - Update order note")
+    @RequirePermission(Role.Permission.ORDER_UPDATE)
+    public ResponseEntity<OrderResponse> updateOrderNote(
+        @PathVariable Long id,
+        @RequestParam String note,
+        Authentication authentication
+    ) {
+        OrderResponse order = orderService.updateOrderNote(id, note, authentication.getName());
+        return ResponseEntity.ok(order);
+    }
 }
+

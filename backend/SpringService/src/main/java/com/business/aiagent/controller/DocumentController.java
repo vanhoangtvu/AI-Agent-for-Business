@@ -65,4 +65,13 @@ public class DocumentController {
         documentService.deleteDocument(id, authentication.getName());
         return ResponseEntity.ok().build();
     }
+    
+    @PostMapping("/{id}/activate")
+    public ResponseEntity<DocumentResponse> activateDocument(
+            @PathVariable Long id,
+            Authentication authentication) {
+        
+        DocumentResponse response = documentService.activateDocument(id, authentication.getName());
+        return ResponseEntity.ok(response);
+    }
 }

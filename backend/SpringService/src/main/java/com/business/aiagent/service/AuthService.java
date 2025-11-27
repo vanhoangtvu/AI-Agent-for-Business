@@ -1,8 +1,6 @@
 package com.business.aiagent.service;
 
-import com.business.aiagent.dto.AuthResponse;
-import com.business.aiagent.dto.LoginRequest;
-import com.business.aiagent.dto.RegisterRequest;
+import com.business.aiagent.dto.*;
 import com.business.aiagent.entity.Role;
 import com.business.aiagent.entity.User;
 import com.business.aiagent.repository.RoleRepository;
@@ -102,5 +100,75 @@ public class AuthService {
                 .email(user.getEmail())
                 .roles(user.getRoles().stream().map(r -> r.getName().name()).collect(Collectors.toSet()))
                 .build();
+    }
+    
+    public UserProfileResponse getProfile(Authentication authentication) {
+        User user = userRepository.findByUsername(authentication.getName())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        
+        return UserProfileResponse.builder()
+                .id(user.getId())
+                .username(user.getUsername())
+                .email(user.getEmail())
+                .fullName(user.getFullName())
+                .phone(user.getPhone())
+                .address(user.getAddress())
+                .createdAt(user.getCreatedAt())
+                .roles(user.getRoles().stream().map(r -> r.getName().name()).collect(Collectors.toSet()))
+                .build();
+    }
+    
+    @Transactional
+    public UserProfileResponse updateProfile(Authentication authentication, UpdateProfileRequest request) {
+        User user = userRepository.findByUsername(authentication.getName())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        
+        // Check if email is being changed and if it's already taken
+        if (request.getEmail() != null && !request.getEmail().equals(user.getEmail())) {
+            if (userRepository.existsByEmail(request.getEmail())) {
+                throw new RuntimeException("Email đã được sử dụng!");
+            }
+            user.setEmail(request.getEmail());
+        }
+        
+        if (request.getFullName() != null) {
+            user.setFullName(request.getFullName());
+        }
+        
+        if (request.getPhone() != null) {
+            user.setPhone(request.getPhone());
+        }
+        
+        if (request.getAddress() != null) {
+            user.setAddress(request.getAddress());
+        }
+        
+        userRepository.save(user);
+        
+        return UserProfileResponse.builder()
+                .id(user.getId())
+                .username(user.getUsername())
+                .email(user.getEmail())
+                .fullName(user.getFullName())
+                .phone(user.getPhone())
+                .address(user.getAddress())
+                .createdAt(user.getCreatedAt())
+                .roles(user.getRoles().stream().map(r -> r.getName().name()).collect(Collectors.toSet()))
+                .build();
+    }
+    
+    @Transactional
+    public void changePassword(Authentication authentication, ChangePasswordRequest request) {
+        User user = userRepository.findByUsername(authentication.getName())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        
+        // Verify old password
+        if (!passwordEncoder.matches(request.getCurrentPassword(), user.getPassword())) {
+            throw new RuntimeException("Mật khẩu hiện tại không đúng!");
+        }
+        
+        // Update to new password
+        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        userRepository.save(user);
     }
 }

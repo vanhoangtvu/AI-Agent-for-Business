@@ -19,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -29,6 +30,7 @@ public class ProductService {
     private final ProductRepository productRepository;
     private final CategoryRepository categoryRepository;
     private final UserRepository userRepository;
+    private final ProductSyncService productSyncService;
     
     public Page<ProductResponse> getAllProducts(
             int page, int size, String sortBy, String sortDir,
@@ -61,8 +63,9 @@ public class ProductService {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Product not found with id: " + id));
         
-        // Increment view count
-        product.setViewCount(product.getViewCount() + 1);
+        // Increment view count (handle null)
+        Integer currentViewCount = product.getViewCount();
+        product.setViewCount(currentViewCount != null ? currentViewCount + 1 : 1);
         productRepository.save(product);
         
         return convertToResponse(product);
@@ -103,11 +106,21 @@ public class ProductService {
         }
         
         Product savedProduct = productRepository.save(product);
+        
+        // Auto sync to AI Service
+        try {
+            productSyncService.syncProduct(savedProduct);
+        } catch (Exception e) {
+            // Log but don't fail the operation
+            System.err.println("Failed to sync product to AI: " + e.getMessage());
+        }
+        
         return convertToResponse(savedProduct);
     }
     
     @Transactional
     public ProductResponse updateProduct(Long id, ProductRequest request, String username) {
+        // Use regular findById to avoid lazy-load issues with @ElementCollection
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Product not found with id: " + id));
         
@@ -115,8 +128,21 @@ public class ProductService {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("User not found"));
         
-        if (!product.getBusinessOwner().getId().equals(user.getId())) {
-            throw new RuntimeException("You don't have permission to update this product");
+        // ADMIN can update any product
+        // BUSINESS can update their own products
+        // BUSINESS can also claim/update products without owner (legacy data)
+        if (!user.isAdmin()) {
+            if (product.getBusinessOwner() != null && 
+                !product.getBusinessOwner().getId().equals(user.getId())) {
+                throw new RuntimeException("You don't have permission to update this product");
+            }
+            // If product has no owner and user is BUSINESS, auto-assign ownership
+            if (product.getBusinessOwner() == null && user.isBusiness()) {
+                product.setBusinessOwner(user);
+                if (product.getCreatedBy() == null) {
+                    product.setCreatedBy(user);
+                }
+            }
         }
         
         // Update fields
@@ -129,8 +155,15 @@ public class ProductService {
         if (request.getBarcode() != null) product.setBarcode(request.getBarcode());
         if (request.getIsActive() != null) product.setIsActive(request.getIsActive());
         if (request.getIsFeatured() != null) product.setIsFeatured(request.getIsFeatured());
-        if (request.getImageUrls() != null) product.setImageUrls(request.getImageUrls());
-        if (request.getTags() != null) product.setTags(request.getTags());
+        
+        // Update collections by replacing entirely (don't access existing to avoid lazy-load)
+        if (request.getImageUrls() != null) {
+            product.setImageUrls(new ArrayList<>(request.getImageUrls()));
+        }
+        if (request.getTags() != null) {
+            product.setTags(new ArrayList<>(request.getTags()));
+        }
+        
         if (request.getWeight() != null) product.setWeight(request.getWeight());
         if (request.getManufacturer() != null) product.setManufacturer(request.getManufacturer());
         if (request.getOrigin() != null) product.setOrigin(request.getOrigin());
@@ -142,6 +175,14 @@ public class ProductService {
         }
         
         Product updatedProduct = productRepository.save(product);
+        
+        // Auto sync to AI Service
+        try {
+            productSyncService.syncProduct(updatedProduct);
+        } catch (Exception e) {
+            System.err.println("Failed to sync product update to AI: " + e.getMessage());
+        }
+        
         return convertToResponse(updatedProduct);
     }
     
@@ -154,13 +195,25 @@ public class ProductService {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("User not found"));
         
-        if (!product.getBusinessOwner().getId().equals(user.getId())) {
-            throw new RuntimeException("You don't have permission to delete this product");
+        // ADMIN can delete any product
+        // BUSINESS can only delete their own products
+        if (!user.isAdmin()) {
+            if (product.getBusinessOwner() == null || 
+                !product.getBusinessOwner().getId().equals(user.getId())) {
+                throw new RuntimeException("You don't have permission to delete this product");
+            }
         }
         
         // Soft delete
         product.setIsActive(false);
         productRepository.save(product);
+        
+        // Remove from AI Service
+        try {
+            productSyncService.deleteProductFromAI(id);
+        } catch (Exception e) {
+            System.err.println("Failed to delete product from AI: " + e.getMessage());
+        }
     }
     
     public Page<ProductResponse> getMyProducts(String username, int page, int size) {
@@ -222,10 +275,10 @@ public class ProductService {
                 .weight(product.getWeight())
                 .manufacturer(product.getManufacturer())
                 .origin(product.getOrigin())
-                .rating(product.getRating())
-                .reviewCount(product.getReviewCount())
-                .viewCount(product.getViewCount())
-                .soldCount(product.getSoldCount())
+                .rating(product.getRating() != null ? product.getRating() : BigDecimal.ZERO)
+                .reviewCount(product.getReviewCount() != null ? product.getReviewCount() : 0)
+                .viewCount(product.getViewCount() != null ? product.getViewCount() : 0)
+                .soldCount(product.getSoldCount() != null ? product.getSoldCount() : 0)
                 .inStock(product.getStockQuantity() > 0)
                 .onSale(product.getCompareAtPrice() != null && 
                         product.getCompareAtPrice().compareTo(product.getPrice()) > 0)

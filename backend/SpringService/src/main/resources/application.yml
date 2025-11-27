@@ -16,6 +16,9 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.MySQLDialect
         format_sql: true
+        use_sql_comments: true
+        show_sql: true
+        generate_statistics: true
   
   servlet:
     multipart:
@@ -38,16 +41,20 @@ app:
     max-file-size: 10485760  # 10MB in bytes
     allowed-types: pdf,docx,doc,txt,xlsx,xls
 
-# Python AI Service Configuration
+# Python AI Service Configuration (Public IP)
 ai:
   service:
-    url: http://localhost:8000
+    url: http://113.187.152.149:8000
     timeout: 30000  # 30 seconds
 
 # Logging
 logging:
   level:
     com.business.aiagent: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+    org.hibernate.orm.jdbc.bind: TRACE
+    org.springframework.orm.jpa: DEBUG
 
 # Swagger/OpenAPI
 springdoc:
@@ -58,3 +65,8 @@ springdoc:
     enabled: true
     org.springframework.security: DEBUG
     org.hibernate.SQL: DEBUG
+
+# Sync Configuration
+sync:
+  api:
+    key: "ai-agent-sync-secure-key-2025-XyZ9#mN8!pQ7"

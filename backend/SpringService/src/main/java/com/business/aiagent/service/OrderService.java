@@ -67,9 +67,12 @@ public class OrderService {
             orderItems.add(orderItem);
             subtotal = subtotal.add(itemTotal);
             
-            // Update product stock and sold count
-            product.setStockQuantity(product.getStockQuantity() - itemRequest.getQuantity());
-            product.setSoldCount(product.getSoldCount() + itemRequest.getQuantity());
+            // Update product stock and sold count (handle null values)
+            int currentStock = product.getStockQuantity() != null ? product.getStockQuantity() : 0;
+            int currentSoldCount = product.getSoldCount() != null ? product.getSoldCount() : 0;
+            
+            product.setStockQuantity(currentStock - itemRequest.getQuantity());
+            product.setSoldCount(currentSoldCount + itemRequest.getQuantity());
             productRepository.save(product);
         }
         
@@ -96,6 +99,7 @@ public class OrderService {
                 .total(total)
                 .shippingName(request.getShippingName())
                 .shippingPhone(request.getShippingPhone())
+                .shippingEmail(request.getShippingEmail())
                 .shippingAddress(request.getShippingAddress())
                 .shippingCity(request.getShippingCity())
                 .shippingDistrict(request.getShippingDistrict())
@@ -123,6 +127,17 @@ public class OrderService {
         return orders.map(this::convertToResponse);
     }
     
+    // For ADMIN/BUSINESS - Get all orders
+    public Page<OrderResponse> getAllOrders(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, 
+            org.springframework.data.domain.Sort.by(
+                org.springframework.data.domain.Sort.Direction.DESC, "createdAt"
+            )
+        );
+        Page<Order> orders = orderRepository.findAll(pageable);
+        return orders.map(this::convertToResponse);
+    }
+    
     public OrderResponse getOrder(Long id, String username) {
         Order order = orderRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Order not found"));
@@ -135,6 +150,13 @@ public class OrderService {
             throw new RuntimeException("Access denied");
         }
         
+        return convertToResponse(order);
+    }
+    
+    // For ADMIN/BUSINESS - Get any order by ID without ownership check
+    public OrderResponse getOrderByIdForAdmin(Long id) {
+        Order order = orderRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Order not found"));
         return convertToResponse(order);
     }
     
@@ -232,6 +254,63 @@ public class OrderService {
         return convertToResponse(order);
     }
     
+    @Transactional
+    public void deleteOrder(Long id, String username) {
+        Order order = orderRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Order not found"));
+        
+        // Restore product stock before deleting
+        for (OrderItem item : order.getItems()) {
+            Product product = item.getProduct();
+            if (product != null) {
+                int currentStock = product.getStockQuantity() != null ? product.getStockQuantity() : 0;
+                int currentSold = product.getSoldCount() != null ? product.getSoldCount() : 0;
+                
+                product.setStockQuantity(currentStock + item.getQuantity());
+                product.setSoldCount(Math.max(0, currentSold - item.getQuantity()));
+                productRepository.save(product);
+            }
+        }
+        
+        orderRepository.delete(order);
+    }
+    
+    @Transactional
+    public OrderResponse updateShippingInfo(Long id, String shippingAddress, String shippingCity,
+            String shippingDistrict, String shippingWard, String shippingEmail, String username) {
+        Order order = orderRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Order not found"));
+        
+        if (shippingAddress != null) {
+            order.setShippingAddress(shippingAddress);
+        }
+        if (shippingCity != null) {
+            order.setShippingCity(shippingCity);
+        }
+        if (shippingDistrict != null) {
+            order.setShippingDistrict(shippingDistrict);
+        }
+        if (shippingWard != null) {
+            order.setShippingWard(shippingWard);
+        }
+        if (shippingEmail != null) {
+            order.setShippingEmail(shippingEmail);
+        }
+        
+        order = orderRepository.save(order);
+        return convertToResponse(order);
+    }
+    
+    @Transactional
+    public OrderResponse updateOrderNote(Long id, String note, String username) {
+        Order order = orderRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Order not found"));
+        
+        order.setNote(note);
+        order = orderRepository.save(order);
+        return convertToResponse(order);
+    }
+    
     private OrderResponse convertToResponse(Order order) {
         return OrderResponse.builder()
                 .id(order.getId())
@@ -251,6 +330,7 @@ public class OrderService {
                 .total(order.getTotal())
                 .shippingName(order.getShippingName())
                 .shippingPhone(order.getShippingPhone())
+                .shippingEmail(order.getShippingEmail())
                 .shippingAddress(order.getShippingAddress())
                 .shippingCity(order.getShippingCity())
                 .shippingDistrict(order.getShippingDistrict())

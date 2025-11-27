@@ -4,6 +4,7 @@ import com.business.aiagent.entity.Role;
 import com.business.aiagent.entity.User;
 import com.business.aiagent.repository.RoleRepository;
 import com.business.aiagent.repository.UserRepository;
+import com.business.aiagent.security.RolePermissionDefaults;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
@@ -38,37 +39,59 @@ public class DataInitializer implements CommandLineRunner {
     }
 
     private void initializeRoles() {
-        // Create ADMIN role if not exists
-        if (roleRepository.findByName(Role.RoleName.ADMIN).isEmpty()) {
-            Role adminRole = Role.builder()
-                .name(Role.RoleName.ADMIN)
-                .description("System Administrator - Full access")
-                .permissions(getAllPermissions())
+        createOrUpdateRole(
+            Role.RoleName.ADMIN,
+            "System Administrator - Full access",
+            RolePermissionDefaults.getPermissionsForRole(Role.RoleName.ADMIN)
+        );
+        createOrUpdateRole(
+            Role.RoleName.BUSINESS,
+            "Business Owner - Manage own products, orders, analytics",
+            RolePermissionDefaults.getPermissionsForRole(Role.RoleName.BUSINESS)
+        );
+        createOrUpdateRole(
+            Role.RoleName.CUSTOMER,
+            "Customer - Shop and view orders",
+            RolePermissionDefaults.getPermissionsForRole(Role.RoleName.CUSTOMER)
+        );
+    }
+
+    private void createOrUpdateRole(Role.RoleName roleName, String description, Set<Role.Permission> permissions) {
+        Role role = roleRepository.findByName(roleName).orElse(null);
+        if (role == null) {
+            Role newRole = Role.builder()
+                .name(roleName)
+                .description(description)
+                .permissions(new HashSet<>(permissions))
                 .build();
-            roleRepository.save(adminRole);
-            log.info("Created ADMIN role with all permissions");
+            roleRepository.save(newRole);
+            log.info("Created {} role with {} permissions", roleName, permissions.size());
+            return;
         }
 
-        // Create BUSINESS role if not exists
-        if (roleRepository.findByName(Role.RoleName.BUSINESS).isEmpty()) {
-            Role businessRole = Role.builder()
-                .name(Role.RoleName.BUSINESS)
-                .description("Business Owner - Manage own products, orders, analytics")
-                .permissions(getBusinessPermissions())
-                .build();
-            roleRepository.save(businessRole);
-            log.info("Created BUSINESS role with business permissions");
+        boolean updated = false;
+        if (role.getPermissions() == null) {
+            role.setPermissions(new HashSet<>(permissions));
+            updated = true;
+        } else {
+            Set<Role.Permission> currentPermissions = new HashSet<>(role.getPermissions());
+            if (!currentPermissions.equals(permissions)) {
+                role.getPermissions().clear();
+                role.getPermissions().addAll(permissions);
+                updated = true;
+            }
+        }
+        if ((role.getDescription() == null && description != null) ||
+            (role.getDescription() != null && !role.getDescription().equals(description))) {
+            role.setDescription(description);
+            updated = true;
         }
 
-        // Create CUSTOMER role if not exists
-        if (roleRepository.findByName(Role.RoleName.CUSTOMER).isEmpty()) {
-            Role customerRole = Role.builder()
-                .name(Role.RoleName.CUSTOMER)
-                .description("Customer - Shop and view orders")
-                .permissions(getCustomerPermissions())
-                .build();
-            roleRepository.save(customerRole);
-            log.info("Created CUSTOMER role with customer permissions");
+        if (updated) {
+            roleRepository.save(role);
+            log.info("Updated {} role with {} permissions", roleName, permissions.size());
+        } else {
+            log.info("{} role is already up-to-date", roleName);
         }
     }
 
@@ -130,73 +153,4 @@ public class DataInitializer implements CommandLineRunner {
         }
     }
 
-    private Set<Role.Permission> getAllPermissions() {
-        Set<Role.Permission> permissions = new HashSet<>();
-        // Add all permissions for ADMIN
-        permissions.add(Role.Permission.USER_READ);
-        permissions.add(Role.Permission.USER_CREATE);
-        permissions.add(Role.Permission.USER_UPDATE);
-        permissions.add(Role.Permission.USER_DELETE);
-        permissions.add(Role.Permission.PRODUCT_READ);
-        permissions.add(Role.Permission.PRODUCT_CREATE);
-        permissions.add(Role.Permission.PRODUCT_UPDATE);
-        permissions.add(Role.Permission.PRODUCT_DELETE);
-        permissions.add(Role.Permission.PRODUCT_MANAGE_ALL);
-        permissions.add(Role.Permission.CATEGORY_READ);
-        permissions.add(Role.Permission.CATEGORY_CREATE);
-        permissions.add(Role.Permission.CATEGORY_UPDATE);
-        permissions.add(Role.Permission.CATEGORY_DELETE);
-        permissions.add(Role.Permission.ORDER_READ);
-        permissions.add(Role.Permission.ORDER_CREATE);
-        permissions.add(Role.Permission.ORDER_UPDATE);
-        permissions.add(Role.Permission.ORDER_DELETE);
-        permissions.add(Role.Permission.ORDER_MANAGE_ALL);
-        permissions.add(Role.Permission.DOCUMENT_READ);
-        permissions.add(Role.Permission.DOCUMENT_CREATE);
-        permissions.add(Role.Permission.DOCUMENT_UPDATE);
-        permissions.add(Role.Permission.DOCUMENT_DELETE);
-        permissions.add(Role.Permission.DOCUMENT_MANAGE_ALL);
-        permissions.add(Role.Permission.ANALYTICS_VIEW);
-        permissions.add(Role.Permission.ANALYTICS_VIEW_ALL);
-        permissions.add(Role.Permission.REPORT_GENERATE);
-        permissions.add(Role.Permission.REPORT_EXPORT);
-        permissions.add(Role.Permission.CHAT_USE);
-        permissions.add(Role.Permission.CHAT_VIEW_HISTORY);
-        permissions.add(Role.Permission.SYSTEM_CONFIG);
-        permissions.add(Role.Permission.SYSTEM_LOGS);
-        permissions.add(Role.Permission.ROLE_READ);
-        permissions.add(Role.Permission.ROLE_MANAGE);
-        return permissions;
-    }
-
-    private Set<Role.Permission> getBusinessPermissions() {
-        Set<Role.Permission> permissions = new HashSet<>();
-        permissions.add(Role.Permission.PRODUCT_READ);
-        permissions.add(Role.Permission.PRODUCT_CREATE);
-        permissions.add(Role.Permission.PRODUCT_UPDATE);
-        permissions.add(Role.Permission.PRODUCT_DELETE);
-        permissions.add(Role.Permission.ORDER_READ);
-        permissions.add(Role.Permission.ORDER_UPDATE);
-        permissions.add(Role.Permission.DOCUMENT_READ);
-        permissions.add(Role.Permission.DOCUMENT_CREATE);
-        permissions.add(Role.Permission.DOCUMENT_UPDATE);
-        permissions.add(Role.Permission.DOCUMENT_DELETE);
-        permissions.add(Role.Permission.ANALYTICS_VIEW);
-        permissions.add(Role.Permission.REPORT_GENERATE);
-        permissions.add(Role.Permission.REPORT_EXPORT);
-        permissions.add(Role.Permission.CHAT_USE);
-        permissions.add(Role.Permission.CHAT_VIEW_HISTORY);
-        return permissions;
-    }
-
-    private Set<Role.Permission> getCustomerPermissions() {
-        Set<Role.Permission> permissions = new HashSet<>();
-        // Customer permissions
-        permissions.add(Role.Permission.PRODUCT_READ);
-        permissions.add(Role.Permission.CATEGORY_READ);
-        permissions.add(Role.Permission.ORDER_READ);
-        permissions.add(Role.Permission.ORDER_CREATE);
-        permissions.add(Role.Permission.CHAT_USE);
-        return permissions;
-    }
 }

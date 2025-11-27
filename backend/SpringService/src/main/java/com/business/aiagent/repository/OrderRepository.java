@@ -23,6 +23,10 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     
     List<Order> findByUser_IdAndStatusOrderByCreatedAtDesc(Long userId, Order.OrderStatus status);
     
+    List<Order> findByStatus(Order.OrderStatus status);
+    
+    Long countByStatus(Order.OrderStatus status);
+    
     @Query("SELECT o FROM Order o WHERE o.user.id = :userId AND " +
            "o.createdAt BETWEEN :startDate AND :endDate ORDER BY o.createdAt DESC")
     List<Order> findUserOrdersByDateRange(@Param("userId") Long userId,

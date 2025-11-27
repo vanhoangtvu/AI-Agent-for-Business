@@ -25,7 +25,7 @@ public class UserService {
     }
     
     @Transactional
-    public UserResponse updateProfile(String username, String email, String fullName, String phoneNumber) {
+    public UserResponse updateProfile(String username, String email, String fullName, String phone, String address) {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("User not found"));
         
@@ -43,8 +43,12 @@ public class UserService {
             user.setFullName(fullName);
         }
         
-        if (phoneNumber != null) {
-            user.setPhone(phoneNumber);
+        if (phone != null) {
+            user.setPhone(phone);
+        }
+        
+        if (address != null) {
+            user.setAddress(address);
         }
         
         User updated = userRepository.save(user);
@@ -71,6 +75,7 @@ public class UserService {
                 user.getEmail(),
                 user.getFullName(),
                 user.getPhone(),
+                user.getAddress(),
                 user.getRoles().stream()
                         .map(role -> role.getName().name())
                         .collect(Collectors.toSet()),

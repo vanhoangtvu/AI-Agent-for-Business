@@ -6,6 +6,7 @@ import com.business.aiagent.entity.User;
 import com.business.aiagent.repository.DocumentRepository;
 import com.business.aiagent.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -19,14 +20,17 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.time.LocalDateTime;
+import java.util.Map;
 import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class DocumentService {
     
     private final DocumentRepository documentRepository;
     private final UserRepository userRepository;
+    private final PythonAIService pythonAIService;
     
     @Value("${app.upload.directory:./uploads}")
     private String uploadDir;
@@ -73,6 +77,12 @@ public class DocumentService {
             
             document = documentRepository.save(document);
             
+            // TODO: Process document asynchronously
+            // Can be triggered manually or via scheduled job
+            // For now, just return the upload response
+            log.info("Document {} uploaded successfully. File: {}", 
+                document.getId(), document.getFileName());
+            
             return mapToResponse(document);
             
         } catch (IOException e) {
@@ -110,15 +120,30 @@ public class DocumentService {
             throw new RuntimeException("Access denied");
         }
         
+        // Delete from vector database first
+        if (document.getVectorized()) {
+            try {
+                log.info("Deleting document {} from vector database", id);
+                pythonAIService.deleteDocument(id);
+                log.info("Document {} deleted from vector database successfully", id);
+            } catch (Exception e) {
+                log.error("Error deleting document {} from vector database: {}", id, e.getMessage());
+                // Continue with database deletion even if vector deletion fails
+            }
+        }
+        
         // Delete physical file
         try {
             Path filePath = Paths.get(document.getFilePath());
             Files.deleteIfExists(filePath);
+            log.info("Physical file deleted for document {}", id);
         } catch (IOException e) {
-            // Log error but continue
+            log.error("Error deleting physical file for document {}: {}", id, e.getMessage());
+            // Continue with database deletion
         }
         
         documentRepository.delete(document);
+        log.info("Document {} deleted from database", id);
     }
     
     @Transactional
@@ -140,6 +165,65 @@ public class DocumentService {
         
         document = documentRepository.save(document);
         return mapToResponse(document);
+    }
+    
+    /**
+     * Activate document: Vector hóa để sử dụng cho RAG
+     * Chỉ documents ACTIVE mới được dùng trong RAG search
+     */
+    @Transactional
+    public DocumentResponse activateDocument(Long id, String username) {
+        Document document = documentRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Document not found"));
+        
+        // Check ownership
+        if (!document.getUser().getUsername().equals(username)) {
+            throw new RuntimeException("Access denied");
+        }
+        
+        // If already vectorized, just mark as active
+        if (document.getVectorized() && document.getStatus() == Document.ProcessStatus.COMPLETED) {
+            log.info("Document {} already vectorized, marking as active", id);
+            return mapToResponse(document);
+        }
+        
+        // Process with Python AI Service
+        try {
+            log.info("🔄 Activating document {}: {}", id, document.getFileName());
+            log.info("   Calling Python service to vectorize...");
+            
+            Map<String, Object> result = pythonAIService.processDocument(
+                document.getId(),
+                document.getFilePath(),
+                document.getUser().getId()
+            );
+            
+            // Update status based on result
+            if (result != null && result.get("success") != null && (Boolean) result.get("success")) {
+                document.setStatus(Document.ProcessStatus.COMPLETED);
+                document.setVectorized(true);
+                document.setChunkCount((Integer) result.getOrDefault("total_chunks", 0));
+                document.setProcessedAt(LocalDateTime.now());
+                
+                log.info("✅ Document {} activated successfully!", id);
+                log.info("   Chunks: {}", document.getChunkCount());
+                log.info("   Status: COMPLETED - Đã sẵn sàng cho RAG");
+            } else {
+                document.setStatus(Document.ProcessStatus.FAILED);
+                log.error("❌ Document {} activation failed: {}", 
+                    id, result.getOrDefault("error", "Unknown error"));
+                throw new RuntimeException("Failed to vectorize document: " + result.getOrDefault("error", "Unknown error"));
+            }
+            
+            document = documentRepository.save(document);
+            return mapToResponse(document);
+            
+        } catch (Exception e) {
+            log.error("❌ Error activating document {}: {}", id, e.getMessage());
+            document.setStatus(Document.ProcessStatus.FAILED);
+            documentRepository.save(document);
+            throw new RuntimeException("Failed to activate document: " + e.getMessage());
+        }
     }
     
     private DocumentResponse mapToResponse(Document document) {

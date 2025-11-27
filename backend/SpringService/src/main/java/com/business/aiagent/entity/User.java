@@ -37,6 +37,9 @@ public class User {
     @Column(length = 20)
     private String phone;
     
+    @Column(length = 500)
+    private String address;
+    
     @Builder.Default
     @Column(nullable = false)
     private Boolean active = true;

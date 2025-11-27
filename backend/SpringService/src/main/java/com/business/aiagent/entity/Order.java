@@ -54,6 +54,12 @@ public class Order {
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal discount = BigDecimal.ZERO; // Giảm giá
     
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "promotion_id")
+    private Promotion appliedPromotion; // Khuyến mãi được áp dụng
+    
+    private String promotionCode; // Mã khuyến mãi đã dùng
+    
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal tax = BigDecimal.ZERO; // Thuế
     
@@ -66,6 +72,8 @@ public class Order {
     
     @Column(nullable = false)
     private String shippingPhone;
+    
+    private String shippingEmail;
     
     @Column(nullable = false)
     private String shippingAddress;

@@ -25,6 +25,8 @@ public class OrderRequest {
     @Pattern(regexp = "^(0|\\+84)(\\d{9,10})$", message = "Số điện thoại không hợp lệ")
     private String shippingPhone;
     
+    private String shippingEmail;
+    
     @NotBlank(message = "Địa chỉ giao hàng không được để trống")
     private String shippingAddress;
     

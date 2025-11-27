@@ -33,6 +33,7 @@ public class OrderResponse {
     // Shipping info
     private String shippingName;
     private String shippingPhone;
+    private String shippingEmail;
     private String shippingAddress;
     private String shippingCity;
     private String shippingDistrict;

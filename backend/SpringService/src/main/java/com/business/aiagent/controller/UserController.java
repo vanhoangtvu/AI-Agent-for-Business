@@ -20,6 +20,9 @@ public class UserController {
     
     @GetMapping("/profile")
     public ResponseEntity<UserResponse> getProfile(Authentication authentication) {
+        if (authentication == null) {
+            return ResponseEntity.status(401).build();
+        }
         UserResponse profile = userService.getUserProfile(authentication.getName());
         return ResponseEntity.ok(profile);
     }
@@ -28,12 +31,16 @@ public class UserController {
     public ResponseEntity<UserResponse> updateProfile(
             @RequestBody UpdateProfileRequest request,
             Authentication authentication) {
+        if (authentication == null) {
+            return ResponseEntity.status(401).build();
+        }
         
         UserResponse updated = userService.updateProfile(
                 authentication.getName(),
                 request.getEmail(),
                 request.getFullName(),
-                request.getPhoneNumber()
+                request.getPhone(),
+                request.getAddress()
         );
         return ResponseEntity.ok(updated);
     }
@@ -42,6 +49,9 @@ public class UserController {
     public ResponseEntity<Void> changePassword(
             @RequestBody ChangePasswordRequest request,
             Authentication authentication) {
+        if (authentication == null) {
+            return ResponseEntity.status(401).build();
+        }
         
         userService.changePassword(
                 authentication.getName(),

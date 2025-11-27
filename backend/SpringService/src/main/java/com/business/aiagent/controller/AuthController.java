@@ -1,13 +1,12 @@
 package com.business.aiagent.controller;
 
-import com.business.aiagent.dto.AuthResponse;
-import com.business.aiagent.dto.LoginRequest;
-import com.business.aiagent.dto.RegisterRequest;
+import com.business.aiagent.dto.*;
 import com.business.aiagent.service.AuthService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -29,5 +28,27 @@ public class AuthController {
     public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request) {
         AuthResponse response = authService.login(request);
         return ResponseEntity.ok(response);
+    }
+    
+    @GetMapping("/profile")
+    public ResponseEntity<UserProfileResponse> getProfile(Authentication authentication) {
+        UserProfileResponse profile = authService.getProfile(authentication);
+        return ResponseEntity.ok(profile);
+    }
+    
+    @PutMapping("/profile")
+    public ResponseEntity<UserProfileResponse> updateProfile(
+            Authentication authentication,
+            @RequestBody UpdateProfileRequest request) {
+        UserProfileResponse profile = authService.updateProfile(authentication, request);
+        return ResponseEntity.ok(profile);
+    }
+    
+    @PostMapping("/change-password")
+    public ResponseEntity<Void> changePassword(
+            Authentication authentication,
+            @RequestBody ChangePasswordRequest request) {
+        authService.changePassword(authentication, request);
+        return ResponseEntity.ok().build();
     }
 }
