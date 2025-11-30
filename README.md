@@ -2,7 +2,7 @@
 
 > **Đồ Án Chuyên Ngành - Đại Học Trà Vinh**
 >
-> Hệ thống AI thông minh hỗ trợ doanh nghiệp trong việc chăm sóc khách hàng, tư vấn sản phẩm và đề xuất chiến lược kinh doanh dựa trên dữ liệu nội bộ.
+> Hệ thống AI thông minh hỗ trợ doanh nghiệp trong việc bans hang chăm sóc khách hàng, tư vấn sản phẩm và đề xuất chiến lược kinh doanh dựa trên dữ liệu nội bộ.
 >
 > **Sinh viên thực hiện:** Nguyễn Văn Hoàng  
 > **MSSV:** 110122078  
