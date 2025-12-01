@@ -20,15 +20,23 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      const response = await apiClient.login(formData);
-      apiClient.setAuthToken(response.token);
-      apiClient.setUserData(response);
+      const response = await apiClient.login({
+        username: formData.username,
+        password: formData.password,
+      });
+
+      // Token and user data are saved automatically in apiClient.login()
+      // No need to call setAuthToken and setUserData again
       
-      // Redirect based on role
-      if (response.role === 'CUSTOMER') {
-        router.push('/shop');
+      console.log('Login successful, role:', response.role);
+
+      // Redirect based on user role
+      if (response.role === 'ADMIN' || response.role === 'BUSINESS') {
+        console.log('Redirecting to /admin');
+        router.push('/admin');
       } else {
-        router.push('/dashboard');
+        console.log('Redirecting to /shop');
+        router.push('/shop');
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Đăng nhập thất bại');
@@ -41,7 +49,7 @@ export default function LoginPage() {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         {/* Navigation */}
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex items-center mb-8">
           <Link
             href="/"
             className="inline-flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
@@ -50,15 +58,6 @@ export default function LoginPage() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
             </svg>
             Trang chủ
-          </Link>
-          <Link
-            href="/shop"
-            className="inline-flex items-center gap-2 px-4 py-2 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-lg hover:bg-blue-200 dark:hover:bg-blue-900/50 transition-colors font-medium"
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-            </svg>
-            Xem cửa hàng
           </Link>
         </div>
 
@@ -73,7 +72,7 @@ export default function LoginPage() {
             </div>
             <h1 className="text-3xl font-bold mb-2">Đăng nhập</h1>
             <p className="text-gray-600 dark:text-gray-400">
-              Chào mừng bạn trở lại với AI Agent for Business
+              Chào mừng trở lại! Vui lòng đăng nhập vào tài khoản của bạn
             </p>
           </div>
 
@@ -90,8 +89,8 @@ export default function LoginPage() {
           )}
 
           {/* Login Form */}
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Username */}
+          <form onSubmit={handleSubmit} className="space-y-5">
+            {/* Username/Email */}
             <div>
               <label htmlFor="username" className="block text-sm font-medium mb-2">
                 Tên đăng nhập hoặc Email
@@ -137,6 +136,23 @@ export default function LoginPage() {
               </div>
             </div>
 
+            {/* Remember Me & Forgot Password */}
+            <div className="flex items-center justify-between">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700"
+                />
+                <span className="text-sm text-gray-600 dark:text-gray-400">Ghi nhớ đăng nhập</span>
+              </label>
+              <Link
+                href="/forgot-password"
+                className="text-sm text-blue-600 dark:text-blue-400 hover:underline"
+              >
+                Quên mật khẩu?
+              </Link>
+            </div>
+
             {/* Submit Button */}
             <button
               type="submit"
@@ -157,8 +173,32 @@ export default function LoginPage() {
             </button>
           </form>
 
+          {/* Divider */}
+          <div className="relative my-6">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-gray-300 dark:border-gray-600"></div>
+            </div>
+            <div className="relative flex justify-center text-sm">
+              <span className="px-4 bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400">
+                Hoặc
+              </span>
+            </div>
+          </div>
+
+          {/* Demo Accounts */}
+          <div className="mb-6 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+            <p className="text-sm font-medium text-blue-900 dark:text-blue-300 mb-2">
+              Tài khoản demo:
+            </p>
+            <div className="space-y-1 text-sm text-blue-800 dark:text-blue-400">
+              <p>• Admin: <code className="bg-blue-100 dark:bg-blue-900/40 px-2 py-0.5 rounded">admin / hoang123</code></p>
+              <p>• Business: <code className="bg-blue-100 dark:bg-blue-900/40 px-2 py-0.5 rounded">business / hoang123</code></p>
+              <p>• Customer: <code className="bg-blue-100 dark:bg-blue-900/40 px-2 py-0.5 rounded">customer / hoang123</code></p>
+            </div>
+          </div>
+
           {/* Register Link */}
-          <div className="mt-6 text-center">
+          <div className="text-center">
             <p className="text-gray-600 dark:text-gray-400">
               Chưa có tài khoản?{' '}
               <Link href="/register" className="text-blue-600 dark:text-blue-400 font-semibold hover:underline">
@@ -166,13 +206,6 @@ export default function LoginPage() {
               </Link>
             </p>
           </div>
-        </div>
-
-        {/* Demo Credentials */}
-        <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
-          <p className="text-sm text-gray-600 dark:text-gray-400 text-center">
-            <strong>Tài khoản demo:</strong> admin / hoang123
-          </p>
         </div>
       </div>
     </div>

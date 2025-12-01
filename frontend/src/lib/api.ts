@@ -1,13 +1,14 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://113.178.203.147:8089/api/v1';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://113.178.203.147:8089/api/v1';
 
-export interface LoginRequest {
-  username: string;
-  password: string;
-}
-
+// Types based on Spring Service DTOs
 export interface RegisterRequest {
   username: string;
   email: string;
+  password: string;
+}
+
+export interface LoginRequest {
+  username: string; // Can be username or email
   password: string;
 }
 
@@ -16,505 +17,505 @@ export interface LoginResponse {
   userId: number;
   username: string;
   email: string;
-  role: string;
+  role: 'ADMIN' | 'BUSINESS' | 'CUSTOMER';
 }
 
-export interface ProductDTO {
-  id: number;
-  name: string;
-  description: string;
-  price: number;
-  quantity: number;
-  imageUrls: string[];
-  status: string;
-  categoryId: number;
-  categoryName: string;
-  sellerId: number;
-  sellerUsername: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface CategoryDTO {
-  id: number;
-  name: string;
-  description: string;
-  imageUrl: string;
-  status: string;
-}
-
-export interface CartItemDTO {
-  id: number;
-  productId: number;
-  productName: string;
-  productPrice: number;
-  productImageUrl: string;
-  quantity: number;
-  subtotal: number;
-  addedAt: string;
-}
-
-export interface CartDTO {
-  id: number;
-  userId: number;
-  items: CartItemDTO[];
-  totalPrice: number;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface OrderItemDTO {
-  id: number;
-  productId: number;
-  productName: string;
-  productPrice: number;
-  quantity: number;
-  subtotal: number;
-}
-
-export interface OrderDTO {
-  id: number;
-  customerId: number;
-  customerUsername: string;
-  customerName: string;
-  customerEmail: string;
-  customerPhone: string;
-  shippingAddress: string;
-  totalAmount: number;
-  status: string;
-  note: string;
-  orderItems: OrderItemDTO[];
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface UserDTO {
-  id: number;
-  username: string;
-  email: string;
-  address: string;
-  phoneNumber: string;
-  avatarUrl: string;
-  role: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface ProfileUpdateRequest {
-  username?: string;
-  email?: string;
-  address?: string;
-  phoneNumber?: string;
-  avatarUrl?: string;
-}
-
-export interface PasswordChangeRequest {
-  oldPassword: string;
-  newPassword: string;
-}
-
-export interface OrderCreateRequest {
-  note?: string;
-  items: {
-    productId: number;
-    quantity: number;
-  }[];
-}
-
+// API Client Class
 class ApiClient {
-  private baseURL: string;
+  private token: string | null = null;
 
   constructor() {
-    this.baseURL = API_URL;
+    // Load token from localStorage on initialization (client-side only)
+    if (typeof window !== 'undefined') {
+      this.token = localStorage.getItem('authToken');
+      console.log('ApiClient initialized. Token loaded from localStorage:', this.token ? 'yes (length: ' + this.token.length + ')' : 'no');
+    }
+  }
+
+  // Set auth token
+  setAuthToken(token: string) {
+    console.log('Setting auth token:', token ? 'token exists (length: ' + token.length + ')' : 'token is null/undefined');
+    this.token = token;
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('authToken', token);
+      console.log('Token saved to localStorage');
+    }
+  }
+
+  // Remove auth token
+  removeAuthToken() {
+    this.token = null;
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('authToken');
+      localStorage.removeItem('userData');
+    }
+  }
+
+  // Get auth token
+  getAuthToken(): string | null {
+    return this.token;
+  }
+
+  // Set user data
+  setUserData(userData: LoginResponse) {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('userData', JSON.stringify(userData));
+    }
+  }
+
+  // Get user data
+  getUserData(): LoginResponse | null {
+    if (typeof window !== 'undefined') {
+      const userData = localStorage.getItem('userData');
+      return userData ? JSON.parse(userData) : null;
+    }
+    return null;
+  }
+
+  // Check if user is authenticated
+  isAuthenticated(): boolean {
+    return this.token !== null;
+  }
+
+  // Generic fetch method
+  private async fetch<T>(
+    endpoint: string,
+    options: RequestInit = {}
+  ): Promise<T> {
+    const headers: HeadersInit = {
+      'Content-Type': 'application/json',
+      ...options.headers,
+    };
+
+    // Add Authorization header if token exists
+    if (this.token) {
+      headers['Authorization'] = `Bearer ${this.token}`;
+      console.log('Token being sent:', this.token.substring(0, 20) + '...');
+    } else {
+      console.warn('No token available for request to:', endpoint);
+    }
+
+    const url = `${API_BASE_URL}${endpoint}`;
+    console.log('API Request:', {
+      url,
+      method: options.method || 'GET',
+      hasToken: !!this.token,
+      endpoint
+    });
+
+    const response = await fetch(url, {
+      ...options,
+      headers,
+    });
+
+    console.log('API Response status:', response.status, 'for', endpoint);
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      let errorMessage = 'Đã có lỗi xảy ra';
+
+      try {
+        const errorJson = JSON.parse(errorText);
+        errorMessage = errorJson.message || errorJson.error || errorMessage;
+      } catch {
+        errorMessage = errorText || errorMessage;
+      }
+
+      console.error('API Error:', {
+        url,
+        status: response.status,
+        statusText: response.statusText,
+        errorMessage,
+        errorText
+      });
+      
+      // If unauthorized, clear token and redirect to login
+      if (response.status === 401) {
+        console.error('Unauthorized! Token may be invalid or expired.');
+        this.removeAuthToken();
+        if (typeof window !== 'undefined' && !window.location.pathname.includes('/login')) {
+          window.location.href = '/login';
+        }
+      }
+      
+      throw new Error(errorMessage);
+    }
+
+    // Handle empty response (e.g., 204 No Content)
+    if (response.status === 204 || response.headers.get('content-length') === '0') {
+      return {} as T;
+    }
+
+    const data = await response.json();
+    console.log('API Response data:', data);
+    return data;
+  }
+
+  // Auth APIs
+  async register(data: RegisterRequest): Promise<LoginResponse> {
+    const response = await this.fetch<LoginResponse>('/auth/register', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+    return response;
   }
 
   async login(data: LoginRequest): Promise<LoginResponse> {
-    const response = await fetch(`${this.baseURL}/auth/login`, {
+    const response = await this.fetch<LoginResponse>('/auth/login', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
       body: JSON.stringify(data),
     });
-
-    if (!response.ok) {
-      const error = await response.json().catch(() => ({ message: 'Đăng nhập thất bại' }));
-      throw new Error(error.message || 'Đăng nhập thất bại');
+    console.log('Login response received:', response);
+    console.log('Token in response:', response.token);
+    
+    // Automatically set token and user data after successful login
+    if (response.token) {
+      this.setAuthToken(response.token);
+      this.setUserData(response);
+      console.log('Token and user data saved automatically after login');
+    } else {
+      console.error('No token in login response!');
     }
-
-    return response.json();
+    
+    return response;
   }
 
-  async register(data: RegisterRequest): Promise<LoginResponse> {
-    const response = await fetch(`${this.baseURL}/auth/register`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(data),
-    });
-
-    if (!response.ok) {
-      const error = await response.json().catch(() => ({ message: 'Đăng ký thất bại' }));
-      throw new Error(error.message || 'Đăng ký thất bại');
-    }
-
-    return response.json();
-  }
-
-  setAuthToken(token: string) {
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('auth_token', token);
-    }
-  }
-
-  getAuthToken(): string | null {
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem('auth_token');
-    }
-    return null;
-  }
-
-  removeAuthToken() {
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem('auth_token');
-    }
-  }
-
-  setUserData(data: LoginResponse) {
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('user_data', JSON.stringify(data));
-    }
-  }
-
-  getUserData(): LoginResponse | null {
-    if (typeof window !== 'undefined') {
-      const data = localStorage.getItem('user_data');
-      return data ? JSON.parse(data) : null;
-    }
-    return null;
-  }
-
-  removeUserData() {
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem('user_data');
-    }
-  }
-
+  // Logout
   logout() {
     this.removeAuthToken();
-    this.removeUserData();
-  }
-
-  // Shop APIs (public - no auth required)
-  async getAllProducts(): Promise<ProductDTO[]> {
-    const response = await fetch(`${this.baseURL}/shop/products`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-
-    if (!response.ok) {
-      throw new Error('Không thể tải danh sách sản phẩm');
+    if (typeof window !== 'undefined') {
+      window.location.href = '/login';
     }
-
-    return response.json();
   }
 
-  async getProductById(id: number): Promise<ProductDTO> {
-    const response = await fetch(`${this.baseURL}/shop/products/${id}`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-
-    if (!response.ok) {
-      throw new Error('Không thể tải thông tin sản phẩm');
-    }
-
-    return response.json();
+  // Shop API (Public - No authentication required)
+  async getAllProducts() {
+    return this.fetch('/shop/products');
   }
 
-  async getAllCategories(): Promise<CategoryDTO[]> {
-    const response = await fetch(`${this.baseURL}/shop/categories`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-
-    if (!response.ok) {
-      throw new Error('Không thể tải danh sách danh mục');
-    }
-
-    return response.json();
+  async getProduct(id: number) {
+    return this.fetch(`/shop/products/${id}`);
   }
 
-  async getProductsByCategory(categoryId: number): Promise<ProductDTO[]> {
-    const response = await fetch(`${this.baseURL}/shop/products/category/${categoryId}`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-
-    if (!response.ok) {
-      throw new Error('Không thể tải sản phẩm theo danh mục');
-    }
-
-    return response.json();
+  async getProductsByCategory(categoryId: number) {
+    return this.fetch(`/shop/products/category/${categoryId}`);
   }
 
-  async searchProducts(keyword: string): Promise<ProductDTO[]> {
-    const response = await fetch(`${this.baseURL}/shop/products/search?keyword=${encodeURIComponent(keyword)}`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-
-    if (!response.ok) {
-      throw new Error('Không thể tìm kiếm sản phẩm');
-    }
-
-    return response.json();
+  async searchProducts(keyword: string) {
+    return this.fetch(`/shop/products/search?keyword=${encodeURIComponent(keyword)}`);
   }
 
-  // Cart APIs (requires auth)
-  async getCart(): Promise<CartDTO> {
-    const token = this.getAuthToken();
-    const response = await fetch(`${this.baseURL}/cart`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-      },
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('Cart API error:', response.status, errorText);
-      throw new Error(`Không thể tải giỏ hàng: ${response.status} - ${errorText}`);
-    }
-
-    return response.json();
+  async getAllCategories() {
+    return this.fetch('/shop/categories');
   }
 
-  async addToCart(productId: number, quantity: number): Promise<CartDTO> {
-    const token = this.getAuthToken();
-    const response = await fetch(`${this.baseURL}/cart/items`, {
+  async getCategory(id: number) {
+    return this.fetch(`/shop/categories/${id}`);
+  }
+
+  // Cart API
+  async getCart() {
+    return this.fetch('/cart');
+  }
+
+  async addToCart(productId: number, quantity: number) {
+    return this.fetch('/cart/items', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-      },
       body: JSON.stringify({ productId, quantity }),
     });
-
-    if (!response.ok) {
-      throw new Error('Không thể thêm vào giỏ hàng');
-    }
-
-    return response.json();
   }
 
-  async updateCartItem(itemId: number, quantity: number): Promise<CartDTO> {
-    const token = this.getAuthToken();
-    const response = await fetch(`${this.baseURL}/cart/items/${itemId}`, {
+  async updateCartItem(itemId: number, quantity: number) {
+    return this.fetch(`/cart/items/${itemId}`, {
       method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-      },
       body: JSON.stringify({ quantity }),
     });
-
-    if (!response.ok) {
-      throw new Error('Không thể cập nhật giỏ hàng');
-    }
-
-    return response.json();
   }
 
-  async removeCartItem(itemId: number): Promise<CartDTO> {
-    const token = this.getAuthToken();
-    const response = await fetch(`${this.baseURL}/cart/items/${itemId}`, {
+  async removeCartItem(itemId: number) {
+    return this.fetch(`/cart/items/${itemId}`, {
       method: 'DELETE',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-      },
     });
-
-    if (!response.ok) {
-      throw new Error('Không thể xóa sản phẩm khỏi giỏ hàng');
-    }
-
-    return response.json();
   }
 
-  async clearCart(): Promise<void> {
-    const token = this.getAuthToken();
-    const response = await fetch(`${this.baseURL}/cart`, {
+  async clearCart() {
+    return this.fetch('/cart', {
       method: 'DELETE',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-      },
     });
-
-    if (!response.ok) {
-      throw new Error('Không thể xóa giỏ hàng');
-    }
   }
 
-  // Order APIs (requires auth)
-  async createOrder(orderData: OrderCreateRequest): Promise<OrderDTO> {
-    const token = this.getAuthToken();
-    const response = await fetch(`${this.baseURL}/orders`, {
+  // Orders API
+  async createOrder(data: { note?: string; items: Array<{ productId: number; quantity: number }> }) {
+    return this.fetch('/orders', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-      },
-      body: JSON.stringify(orderData),
+      body: JSON.stringify(data),
     });
-
-    if (!response.ok) {
-      const error = await response.json().catch(() => ({ message: 'Không thể tạo đơn hàng' }));
-      throw new Error(error.message || 'Không thể tạo đơn hàng');
-    }
-
-    return response.json();
   }
 
-  async getMyOrders(): Promise<OrderDTO[]> {
-    const token = this.getAuthToken();
-    const response = await fetch(`${this.baseURL}/orders/my-orders`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-      },
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('Orders API error:', response.status, errorText);
-      throw new Error(`Không thể tải danh sách đơn hàng: ${response.status} - ${errorText}`);
-    }
-
-    return response.json();
+  async getMyOrders() {
+    return this.fetch('/orders/my-orders');
   }
 
-  async getOrderById(id: number): Promise<OrderDTO> {
-    const token = this.getAuthToken();
-    const response = await fetch(`${this.baseURL}/orders/${id}`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-      },
-    });
-
-    if (!response.ok) {
-      throw new Error('Không thể tải thông tin đơn hàng');
-    }
-
-    return response.json();
+  async getOrder(id: number) {
+    return this.fetch(`/orders/${id}`);
   }
 
-  async cancelOrder(id: number): Promise<void> {
-    const token = this.getAuthToken();
-    const response = await fetch(`${this.baseURL}/orders/${id}/cancel`, {
+  async cancelOrder(id: number) {
+    return this.fetch(`/orders/${id}/cancel`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-      },
     });
-
-    if (!response.ok) {
-      throw new Error('Không thể hủy đơn hàng');
-    }
   }
 
-  async updateShippingAddress(id: number, shippingAddress: string): Promise<OrderDTO> {
-    const token = this.getAuthToken();
-    const response = await fetch(`${this.baseURL}/orders/${id}/address`, {
+  async updateOrderAddress(id: number, shippingAddress: string) {
+    return this.fetch(`/orders/${id}/address`, {
       method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-      },
       body: JSON.stringify({ shippingAddress }),
     });
-
-    if (!response.ok) {
-      throw new Error('Không thể cập nhật địa chỉ giao hàng');
-    }
-
-    return response.json();
   }
 
-  // Profile APIs (requires auth)
-  async getCurrentProfile(): Promise<UserDTO> {
-    const token = this.getAuthToken();
-    const response = await fetch(`${this.baseURL}/profile`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-      },
+  // Profile API
+  async getProfile() {
+    return this.fetch('/profile');
+  }
+
+  async updateProfile(data: { 
+    username?: string; 
+    email?: string; 
+    address?: string; 
+    phoneNumber?: string;
+    avatarUrl?: string;
+  }) {
+    return this.fetch('/profile', {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async changePassword(oldPassword: string, newPassword: string) {
+    return this.fetch('/profile/password', {
+      method: 'PATCH',
+      body: JSON.stringify({ oldPassword, newPassword }),
+    });
+  }
+
+  // User Management API (Admin/Business only)
+  async getAllUsers() {
+    return this.fetch('/users');
+  }
+
+  async deleteUser(id: number) {
+    return this.fetch(`/users/${id}`, {
+      method: 'DELETE',
+    });
+  }
+
+  async updateAccountStatus(userId: number, status: string) {
+    return this.fetch(`/users/${userId}/status?status=${status}`, {
+      method: 'PATCH',
+    });
+  }
+
+  async updateUserRole(userId: number, role: string) {
+    return this.fetch(`/users/${userId}/role?role=${role}`, {
+      method: 'PATCH',
+    });
+  }
+
+  // Admin Product Management API
+  async getAdminProducts() {
+    return this.fetch('/admin/products');
+  }
+
+  async getProductsBySeller(sellerId: number) {
+    return this.fetch(`/admin/products/seller/${sellerId}`);
+  }
+
+  async createProduct(data: {
+    name: string;
+    description: string;
+    price: number;
+    quantity: number;
+    categoryId: number;
+    imageUrls?: string[];
+  }) {
+    return this.fetch('/admin/products', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async updateProduct(productId: number, data: {
+    name: string;
+    description: string;
+    price: number;
+    quantity: number;
+    categoryId: number;
+    imageUrls?: string[];
+  }) {
+    return this.fetch(`/admin/products/${productId}`, {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async deleteProduct(productId: number) {
+    return this.fetch(`/admin/products/${productId}`, {
+      method: 'DELETE',
+    });
+  }
+
+  async updateProductStatus(productId: number, status: string) {
+    return this.fetch(`/admin/products/${productId}/status?status=${status}`, {
+      method: 'PATCH',
+    });
+  }
+
+  // Admin Category Management API
+  async getAdminCategories() {
+    return this.fetch('/admin/categories');
+  }
+
+  async createCategory(data: { name: string; description?: string }) {
+    return this.fetch('/admin/categories', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async updateCategory(categoryId: number, data: { name: string; description?: string }) {
+    return this.fetch(`/admin/categories/${categoryId}`, {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async deleteCategory(categoryId: number) {
+    return this.fetch(`/admin/categories/${categoryId}`, {
+      method: 'DELETE',
+    });
+  }
+
+  async updateCategoryStatus(categoryId: number, status: string) {
+    return this.fetch(`/admin/categories/${categoryId}/status?status=${status}`, {
+      method: 'PATCH',
+    });
+  }
+
+  // Admin Order Management API
+  async getAdminOrders() {
+    return this.fetch('/admin/orders');
+  }
+
+  async getOrdersByStatus(status: string) {
+    return this.fetch(`/admin/orders/status/${status}`);
+  }
+
+  async getOrdersByCustomer(customerId: number) {
+    return this.fetch(`/admin/orders/customer/${customerId}`);
+  }
+
+  async updateOrderStatus(orderId: number, status: string) {
+    return this.fetch(`/admin/orders/${orderId}/status?status=${status}`, {
+      method: 'PATCH',
+    });
+  }
+
+  // Admin Dashboard Statistics API
+  async getAdminStats() {
+    return this.fetch('/admin/dashboard/admin-stats');
+  }
+
+  async getBusinessStats() {
+    return this.fetch('/admin/dashboard/business-stats');
+  }
+
+  async getDailyRevenue(days: number) {
+    return this.fetch(`/admin/dashboard/revenue/daily?days=${days}`);
+  }
+
+  async getWeeklyRevenue(weeks: number) {
+    return this.fetch(`/admin/dashboard/revenue/weekly?weeks=${weeks}`);
+  }
+
+  async getMonthlyRevenue(months: number) {
+    return this.fetch(`/admin/dashboard/revenue/monthly?months=${months}`);
+  }
+
+  async getAdminDailyRevenue(days: number) {
+    return this.fetch(`/admin/dashboard/admin/revenue/daily?days=${days}`);
+  }
+
+  async getAdminWeeklyRevenue(weeks: number) {
+    return this.fetch(`/admin/dashboard/admin/revenue/weekly?weeks=${weeks}`);
+  }
+
+  async getAdminMonthlyRevenue(months: number) {
+    return this.fetch(`/admin/dashboard/admin/revenue/monthly?months=${months}`);
+  }
+
+  // Business Documents API
+  async uploadDocument(file: File, description?: string) {
+    const formData = new FormData();
+    formData.append('file', file);
+    if (description) {
+      formData.append('description', description);
+    }
+
+    const headers: HeadersInit = {};
+    if (this.token) {
+      headers['Authorization'] = `Bearer ${this.token}`;
+    }
+
+    const url = `${API_BASE_URL}/admin/business-documents`;
+    const response = await fetch(url, {
+      method: 'POST',
+      headers,
+      body: formData,
     });
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('Profile API error:', response.status, errorText);
-      throw new Error(`Không thể tải thông tin profile: ${response.status} - ${errorText}`);
+      throw new Error(errorText || 'Failed to upload document');
     }
 
     return response.json();
   }
 
-  async updateProfile(profileData: ProfileUpdateRequest): Promise<UserDTO> {
-    const token = this.getAuthToken();
-    const response = await fetch(`${this.baseURL}/profile`, {
-      method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-      },
-      body: JSON.stringify(profileData),
-    });
-
-    if (!response.ok) {
-      throw new Error('Không thể cập nhật profile');
-    }
-
-    return response.json();
+  async getMyDocuments() {
+    return this.fetch('/admin/business-documents/my-documents');
   }
 
-  async changePassword(oldPassword: string, newPassword: string): Promise<string> {
-    const token = this.getAuthToken();
-    const response = await fetch(`${this.baseURL}/profile/password`, {
-      method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-      },
-      body: JSON.stringify({ oldPassword, newPassword }),
+  async getDocument(id: number) {
+    return this.fetch(`/admin/business-documents/${id}`);
+  }
+
+  async getDocumentsByBusiness(businessId: number) {
+    return this.fetch(`/admin/business-documents/business/${businessId}`);
+  }
+
+  async deleteDocument(id: number) {
+    return this.fetch(`/admin/business-documents/${id}`, {
+      method: 'DELETE',
+    });
+  }
+
+  async downloadDocument(filePath: string) {
+    const headers: HeadersInit = {};
+    if (this.token) {
+      headers['Authorization'] = `Bearer ${this.token}`;
+    }
+
+    const response = await fetch(`${API_BASE_URL}${filePath}`, {
+      headers,
     });
 
     if (!response.ok) {
-      const error = await response.json().catch(() => ({ message: 'Không thể đổi mật khẩu' }));
-      throw new Error(error.message || 'Không thể đổi mật khẩu');
+      throw new Error('Failed to download document');
     }
 
-    return response.text();
+    return response.blob();
   }
 }
 
+// Export singleton instance
 export const apiClient = new ApiClient();

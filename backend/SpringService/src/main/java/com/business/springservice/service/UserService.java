@@ -17,8 +17,22 @@ public class UserService {
     private final UserRepository userRepository;
     private final org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
     
-    public List<UserDTO> getAllUsers() {
-        return userRepository.findAll().stream()
+    public List<UserDTO> getAllUsers(String role) {
+        System.out.println("getAllUsers called with role: " + role);
+        List<User> users = userRepository.findAll();
+        System.out.println("Total users in database: " + users.size());
+        
+        // BUSINESS chỉ xem được CUSTOMER
+        if ("BUSINESS".equals(role)) {
+            users = users.stream()
+                    .filter(user -> user.getRole() == com.business.springservice.enums.Role.CUSTOMER)
+                    .collect(Collectors.toList());
+            System.out.println("Filtered for BUSINESS - CUSTOMER users only: " + users.size());
+        } else {
+            System.out.println("ADMIN or other role - showing all users: " + users.size());
+        }
+        
+        return users.stream()
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
     }
@@ -75,6 +89,9 @@ public class UserService {
         if (request.getRole() != null) {
             user.setRole(request.getRole());
         }
+        if (request.getAccountStatus() != null) {
+            user.setAccountStatus(request.getAccountStatus());
+        }
         if (request.getPassword() != null && !request.getPassword().isEmpty()) {
             user.setPassword(passwordEncoder.encode(request.getPassword()));
         }
@@ -107,6 +124,38 @@ public class UserService {
         userRepository.save(user);
     }
     
+    @Transactional
+    public UserDTO updateAccountStatus(Long id, String statusStr) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
+        
+        try {
+            com.business.springservice.enums.AccountStatus status = 
+                    com.business.springservice.enums.AccountStatus.valueOf(statusStr.toUpperCase());
+            user.setAccountStatus(status);
+            User updatedUser = userRepository.save(user);
+            return convertToDTO(updatedUser);
+        } catch (IllegalArgumentException e) {
+            throw new RuntimeException("Invalid account status: " + statusStr + ". Valid values: ACTIVE, INACTIVE, SUSPENDED, BANNED");
+        }
+    }
+    
+    @Transactional
+    public UserDTO updateUserRole(Long id, String roleStr) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
+        
+        try {
+            com.business.springservice.enums.Role role = 
+                    com.business.springservice.enums.Role.valueOf(roleStr.toUpperCase());
+            user.setRole(role);
+            User updatedUser = userRepository.save(user);
+            return convertToDTO(updatedUser);
+        } catch (IllegalArgumentException e) {
+            throw new RuntimeException("Invalid role: " + roleStr + ". Valid values: ADMIN, BUSINESS, CUSTOMER");
+        }
+    }
+    
     private UserDTO convertToDTO(User user) {
         return new UserDTO(
                 user.getId(),
@@ -117,6 +166,7 @@ public class UserService {
                 user.getPhoneNumber(),
                 user.getAvatarUrl(),
                 user.getRole(),
+                user.getAccountStatus(),
                 user.getCreatedAt(),
                 user.getUpdatedAt()
         );

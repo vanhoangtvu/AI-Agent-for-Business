@@ -20,13 +20,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
         
-        String path = request.getRequestURI();
-        
-        // Skip authentication for OPTIONS requests (CORS preflight)
+        // IMPORTANT: Skip authentication for OPTIONS requests FIRST (CORS preflight)
         if ("OPTIONS".equals(request.getMethod())) {
+            response.setStatus(HttpServletResponse.SC_OK);
             filterChain.doFilter(request, response);
             return;
         }
+        
+        String path = request.getRequestURI();
         
         // Skip authentication for login, register, swagger
         if (path.contains("/auth/") || path.contains("/swagger") || path.contains("/api-docs") || 
@@ -35,8 +36,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             return;
         }
         
-        // Check profile, cart, admin and orders endpoints
-        if (path.contains("/profile") || path.contains("/cart") || path.contains("/admin") || path.contains("/orders")) {
+        // Check profile, cart, admin, orders and users endpoints
+        if (path.contains("/profile") || path.contains("/cart") || path.contains("/admin") || 
+            path.contains("/orders") || (path.contains("/users") && !"POST".equals(request.getMethod()))) {
             String authHeader = request.getHeader("Authorization");
             
             if (authHeader == null || !authHeader.startsWith("Bearer ")) {

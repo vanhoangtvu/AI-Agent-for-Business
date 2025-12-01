@@ -44,6 +44,7 @@
 /home/hv/DuAn/AI-Agent-for-Business/backend/SpringService/src/main/java/com/business/springservice/entity/OrderItem.java
 /home/hv/DuAn/AI-Agent-for-Business/backend/SpringService/src/main/java/com/business/springservice/entity/Product.java
 /home/hv/DuAn/AI-Agent-for-Business/backend/SpringService/src/main/java/com/business/springservice/entity/User.java
+/home/hv/DuAn/AI-Agent-for-Business/backend/SpringService/src/main/java/com/business/springservice/enums/AccountStatus.java
 /home/hv/DuAn/AI-Agent-for-Business/backend/SpringService/src/main/java/com/business/springservice/enums/OrderStatus.java
 /home/hv/DuAn/AI-Agent-for-Business/backend/SpringService/src/main/java/com/business/springservice/enums/Role.java
 /home/hv/DuAn/AI-Agent-for-Business/backend/SpringService/src/main/java/com/business/springservice/enums/Status.java

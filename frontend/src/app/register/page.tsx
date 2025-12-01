@@ -44,12 +44,8 @@ export default function RegisterPage() {
       apiClient.setAuthToken(response.token);
       apiClient.setUserData(response);
       
-      // Redirect based on role (default is CUSTOMER after registration)
-      if (response.role === 'CUSTOMER') {
-        router.push('/shop');
-      } else {
-        router.push('/dashboard');
-      }
+      // Redirect to shop page after successful registration
+      router.push('/shop');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Đăng ký thất bại');
     } finally {
@@ -61,7 +57,7 @@ export default function RegisterPage() {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         {/* Navigation */}
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex items-center mb-8">
           <Link
             href="/"
             className="inline-flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
@@ -70,15 +66,6 @@ export default function RegisterPage() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
             </svg>
             Trang chủ
-          </Link>
-          <Link
-            href="/shop"
-            className="inline-flex items-center gap-2 px-4 py-2 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-lg hover:bg-blue-200 dark:hover:bg-blue-900/50 transition-colors font-medium"
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-            </svg>
-            Xem cửa hàng
           </Link>
         </div>
 

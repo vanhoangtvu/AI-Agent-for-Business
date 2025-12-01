@@ -1,5 +1,6 @@
 package com.business.springservice.entity;
 
+import com.business.springservice.enums.AccountStatus;
 import com.business.springservice.enums.Role;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -39,6 +40,10 @@ public class User {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Role role;
+    
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private AccountStatus accountStatus = AccountStatus.ACTIVE;
     
     @Column(name = "created_at")
     private LocalDateTime createdAt;

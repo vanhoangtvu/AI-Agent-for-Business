@@ -1,5 +1,6 @@
 package com.business.springservice.dto;
 
+import com.business.springservice.enums.AccountStatus;
 import com.business.springservice.enums.Role;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -37,6 +38,9 @@ public class UserDTO {
     
     @Schema(description = "User role", example = "CUSTOMER")
     private Role role;
+    
+    @Schema(description = "Account status", example = "ACTIVE")
+    private AccountStatus accountStatus;
     
     @Schema(accessMode = Schema.AccessMode.READ_ONLY, description = "Created timestamp")
     private LocalDateTime createdAt;

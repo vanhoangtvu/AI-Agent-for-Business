@@ -56,16 +56,16 @@ export default function Home() {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center mt-8">
             <Link
-              href="/chat"
+              href="/shop"
               className="px-8 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl font-semibold hover:shadow-xl transition-all transform hover:scale-105"
             >
-              Trải nghiệm ngay
+              Khám phá cửa hàng
             </Link>
             <Link
-              href="/about"
+              href="/register"
               className="px-8 py-4 border-2 border-gray-300 dark:border-gray-600 rounded-xl font-semibold hover:border-blue-600 dark:hover:border-blue-400 transition-all"
             >
-              Tìm hiểu thêm
+              Đăng ký ngay
             </Link>
           </div>
         </div>
