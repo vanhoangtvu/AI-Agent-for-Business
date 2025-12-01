@@ -4,6 +4,7 @@
 /home/hv/DuAn/AI-Agent-for-Business/backend/SpringService/src/main/java/com/business/springservice/config/OpenApiConfig.java
 /home/hv/DuAn/AI-Agent-for-Business/backend/SpringService/src/main/java/com/business/springservice/config/PasswordEncoderConfig.java
 /home/hv/DuAn/AI-Agent-for-Business/backend/SpringService/src/main/java/com/business/springservice/config/SecurityConfig.java
+/home/hv/DuAn/AI-Agent-for-Business/backend/SpringService/src/main/java/com/business/springservice/controller/AnalyticsController.java
 /home/hv/DuAn/AI-Agent-for-Business/backend/SpringService/src/main/java/com/business/springservice/controller/AuthController.java
 /home/hv/DuAn/AI-Agent-for-Business/backend/SpringService/src/main/java/com/business/springservice/controller/BusinessDocumentController.java
 /home/hv/DuAn/AI-Agent-for-Business/backend/SpringService/src/main/java/com/business/springservice/controller/CartController.java
@@ -34,6 +35,7 @@
 /home/hv/DuAn/AI-Agent-for-Business/backend/SpringService/src/main/java/com/business/springservice/dto/ProfileUpdateRequest.java
 /home/hv/DuAn/AI-Agent-for-Business/backend/SpringService/src/main/java/com/business/springservice/dto/RegisterRequest.java
 /home/hv/DuAn/AI-Agent-for-Business/backend/SpringService/src/main/java/com/business/springservice/dto/RevenueReportDTO.java
+/home/hv/DuAn/AI-Agent-for-Business/backend/SpringService/src/main/java/com/business/springservice/dto/SystemAnalyticsDataDTO.java
 /home/hv/DuAn/AI-Agent-for-Business/backend/SpringService/src/main/java/com/business/springservice/dto/UpdateCartItemRequest.java
 /home/hv/DuAn/AI-Agent-for-Business/backend/SpringService/src/main/java/com/business/springservice/dto/UserDTO.java
 /home/hv/DuAn/AI-Agent-for-Business/backend/SpringService/src/main/java/com/business/springservice/entity/BusinessDocument.java
@@ -59,6 +61,7 @@
 /home/hv/DuAn/AI-Agent-for-Business/backend/SpringService/src/main/java/com/business/springservice/security/JwtAuthenticationFilter.java
 /home/hv/DuAn/AI-Agent-for-Business/backend/SpringService/src/main/java/com/business/springservice/security/JwtUtil.java
 /home/hv/DuAn/AI-Agent-for-Business/backend/SpringService/src/main/java/com/business/springservice/security/RoleAuthorizationFilter.java
+/home/hv/DuAn/AI-Agent-for-Business/backend/SpringService/src/main/java/com/business/springservice/service/AnalyticsService.java
 /home/hv/DuAn/AI-Agent-for-Business/backend/SpringService/src/main/java/com/business/springservice/service/AuthService.java
 /home/hv/DuAn/AI-Agent-for-Business/backend/SpringService/src/main/java/com/business/springservice/service/BusinessDocumentService.java
 /home/hv/DuAn/AI-Agent-for-Business/backend/SpringService/src/main/java/com/business/springservice/service/CartService.java
