@@ -1,51 +1,192 @@
-# Python API Service with Swagger
+# Python API Service - Gemini AI & ChromaDB
 
-API service được xây dựng bằng Flask và tích hợp Swagger documentation.
+API service tích hợp Google Gemini AI và ChromaDB vector database với Swagger documentation.
 
-## Cài đặt
+## 🌐 Public Access
 
-1. Tạo virtual environment:
+**API URL:** `http://113.178.203.147:5000`
+
+**Swagger Documentation:** `http://113.178.203.147:5000/docs`
+
+**Test Stream Chat:** Mở file `test_stream.html` trong trình duyệt
+
+---
+
+## 🚀 Cài đặt
+
+### 1. Tạo virtual environment:
 ```bash
-python -m venv venv
-source venv/bin/activate  # Linux/Mac
+python3 -m venv venv
 ```
 
-2. Cài đặt dependencies:
+### 2. Chạy server:
 ```bash
-pip install -r requirements.txt
+./start.sh
 ```
 
-## Chạy ứng dụng
+Script sẽ tự động:
+- Kiểm tra và tạo virtual environment
+- Cài đặt dependencies
+- Load biến môi trường từ `.env`
+- Khởi động Flask server
 
+---
+
+## 📚 API Endpoints
+
+### 🔍 Health Check
+- **GET** `/health/` - Kiểm tra trạng thái API
+
+### 🤖 Gemini AI
+- **GET** `/gemini/models` - Danh sách các Gemini models có sẵn
+- **POST** `/gemini/chat` - Chat với Gemini (response đầy đủ)
+- **POST** `/gemini/chat/stream` - Chat với Gemini (streaming response)
+
+### 💾 ChromaDB
+- **GET** `/chroma/collections` - Danh sách collections
+- **GET** `/chroma/collection/{name}` - Xem dữ liệu trong collection
+- **DELETE** `/chroma/collection/{name}` - Xóa collection
+- **POST** `/chroma/documents` - Thêm documents vào collection
+- **POST** `/chroma/query` - Tìm kiếm trong collection
+
+---
+
+## 📖 Hướng dẫn sử dụng
+
+### Chat với Gemini AI
+
+**Chat bình thường:**
 ```bash
-python app.py
-```
-
-API sẽ chạy tại: `http://localhost:5000`
-
-## Swagger Documentation
-
-Truy cập Swagger UI tại: `http://localhost:5000/docs`
-
-## API Endpoints
-
-- `GET /api/health` - Health check
-- `GET /api/users` - Lấy danh sách users
-- `POST /api/users` - Tạo user mới
-- `GET /api/users/{user_id}` - Lấy thông tin user theo ID
-- `PUT /api/users/{user_id}` - Cập nhật user
-- `DELETE /api/users/{user_id}` - Xóa user
-
-## Ví dụ sử dụng
-
-### Tạo user mới
-```bash
-curl -X POST http://localhost:5000/api/users \
+curl -X POST http://113.178.203.147:5000/gemini/chat \
   -H "Content-Type: application/json" \
-  -d '{"name": "Test User", "email": "test@example.com"}'
+  -d '{
+    "message": "Xin chào, bạn là ai?",
+    "model": "gemini-2.5-flash"
+  }'
 ```
 
-### Lấy danh sách users
+**Chat streaming:**
 ```bash
-curl http://localhost:5000/api/users
+curl -N -X POST http://113.178.203.147:5000/gemini/chat/stream \
+  -H "Content-Type: application/json" \
+  -d '{
+    "message": "Viết một câu chuyện ngắn",
+    "model": "gemini-2.5-flash"
+  }'
 ```
+
+### ChromaDB - Thêm documents
+
+```bash
+curl -X POST http://113.178.203.147:5000/chroma/documents \
+  -H "Content-Type: application/json" \
+  -d '{
+    "collection_name": "my_docs",
+    "documents": [
+      "Python là ngôn ngữ lập trình phổ biến",
+      "JavaScript được sử dụng cho web development"
+    ],
+    "metadatas": [
+      {"source": "wiki", "category": "programming"},
+      {"source": "wiki", "category": "web"}
+    ]
+  }'
+```
+
+### ChromaDB - Tìm kiếm
+
+```bash
+curl -X POST http://113.178.203.147:5000/chroma/query \
+  -H "Content-Type: application/json" \
+  -d '{
+    "collection_name": "my_docs",
+    "query_texts": ["ngôn ngữ lập trình"],
+    "n_results": 5
+  }'
+```
+
+### Xem tất cả collections
+
+```bash
+curl http://113.178.203.147:5000/chroma/collections
+```
+
+---
+
+## 🔧 Cấu hình
+
+### File `.env`
+```env
+FLASK_APP=app.py
+FLASK_ENV=development
+PORT=5000
+GOOGLE_API_KEY=your_api_key_here
+```
+
+### Cấu trúc thư mục
+```
+backend/Pythonservice/
+├── app.py              # Main application
+├── routes/             # API routes
+│   ├── health.py       # Health check
+│   ├── gemini.py       # Gemini AI endpoints
+│   └── chroma.py       # ChromaDB endpoints
+├── chroma_data/        # ChromaDB storage (auto-created)
+├── requirements.txt    # Dependencies
+├── start.sh           # Start script
+├── test_stream.html   # Test streaming chat
+└── README.md          # Documentation
+```
+
+---
+
+## 🎨 Test Streaming Chat UI
+
+Mở file `test_stream.html` trong trình duyệt để test streaming chat với giao diện đẹp.
+
+**Tính năng:**
+- ✨ Giao diện chat đẹp mắt
+- 💬 Streaming response theo thời gian thực
+- 🎯 Chọn model Gemini
+- ⚡ Typing indicator
+- 📱 Responsive design
+
+---
+
+## 🌟 Models Available
+
+- **gemini-2.5-flash** - Nhanh nhất, phù hợp cho chat
+- **gemini-2.5-pro** - Mạnh nhất, phù hợp cho tác vụ phức tạp
+- **gemini-2.0-flash** - Ổn định
+
+---
+
+## 🔐 CORS
+
+API đã được cấu hình CORS để cho phép truy cập từ mọi origin.
+
+---
+
+## 📝 Notes
+
+- ChromaDB data được lưu trong thư mục `./chroma_data`
+- Gemini models list được cache khi khởi động server
+- Streaming sử dụng Server-Sent Events (SSE)
+- API key Gemini được load từ biến môi trường
+
+---
+
+## 🆘 Troubleshooting
+
+**Lỗi NumPy:**
+```bash
+./venv/bin/pip install "numpy<2.0.0" --force-reinstall
+```
+
+**Server không khởi động:**
+- Kiểm tra port 5000 có bị chiếm không
+- Kiểm tra API key Gemini trong `.env`
+
+**CORS error:**
+- Đảm bảo server đang chạy
+- Kiểm tra URL trong code frontend
