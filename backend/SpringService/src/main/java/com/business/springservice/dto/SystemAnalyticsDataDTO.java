@@ -46,6 +46,10 @@ public class SystemAnalyticsDataDTO {
     private List<ProductPerformanceDTO> topSellingProducts;
     private List<ProductPerformanceDTO> lowStockProducts;
     
+    // Business documents
+    private Long totalDocuments;
+    private List<BusinessDocumentSummaryDTO> businessDocuments;
+    
     @Data
     @NoArgsConstructor
     @AllArgsConstructor
@@ -148,5 +152,20 @@ public class SystemAnalyticsDataDTO {
         private BigDecimal revenue;
         private String categoryName;
         private String sellerUsername;
+    }
+    
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class BusinessDocumentSummaryDTO {
+        private Long id;
+        private Long businessId;
+        private String businessUsername;
+        private String fileName;
+        private String fileType;
+        private String filePath;
+        private Long fileSize;
+        private String description;
+        private String uploadedAt;
     }
 }

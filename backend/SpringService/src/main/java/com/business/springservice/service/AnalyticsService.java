@@ -26,6 +26,7 @@ public class AnalyticsService {
     private final ProductRepository productRepository;
     private final CategoryRepository categoryRepository;
     private final OrderRepository orderRepository;
+    private final BusinessDocumentRepository businessDocumentRepository;
     
     @Transactional(readOnly = true)
     public SystemAnalyticsDataDTO getSystemAnalyticsData() {
@@ -263,6 +264,23 @@ public class AnalyticsService {
                         p.getSeller().getUsername()
                 ))
                 .sorted(Comparator.comparingInt(SystemAnalyticsDataDTO.ProductPerformanceDTO::getQuantityInStock))
+                .collect(Collectors.toList()));
+        
+        // Business documents
+        List<BusinessDocument> allDocuments = businessDocumentRepository.findAll();
+        data.setTotalDocuments((long) allDocuments.size());
+        data.setBusinessDocuments(allDocuments.stream()
+                .map(doc -> new SystemAnalyticsDataDTO.BusinessDocumentSummaryDTO(
+                        doc.getId(),
+                        doc.getBusiness().getId(),
+                        doc.getBusiness().getUsername(),
+                        doc.getFileName(),
+                        doc.getFileType(),
+                        doc.getFilePath(),
+                        doc.getFileSize(),
+                        doc.getDescription(),
+                        doc.getUploadedAt().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)
+                ))
                 .collect(Collectors.toList()));
         
         return data;

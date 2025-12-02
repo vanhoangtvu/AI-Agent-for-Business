@@ -19,6 +19,7 @@ com/business/springservice/dto/SystemAnalyticsDataDTO$RevenueByBusinessDTO.class
 com/business/springservice/entity/Product.class
 com/business/springservice/dto/SystemAnalyticsDataDTO$BusinessPerformanceDTO.class
 com/business/springservice/dto/SystemAnalyticsDataDTO$ProductAnalyticsDTO.class
+com/business/springservice/SpringServiceApplication.class
 com/business/springservice/controller/PasswordChangeRequest.class
 com/business/springservice/controller/AnalyticsController.class
 com/business/springservice/config/OpenApiConfig.class
@@ -31,6 +32,7 @@ com/business/springservice/security/JwtUtil.class
 com/business/springservice/controller/CartController.class
 com/business/springservice/entity/Order.class
 com/business/springservice/dto/AddToCartRequest.class
+com/business/springservice/config/CorsConfig.class
 com/business/springservice/dto/UserDTO.class
 com/business/springservice/entity/BusinessDocument.class
 com/business/springservice/dto/BusinessDocumentDTO.class
@@ -56,6 +58,7 @@ com/business/springservice/controller/ProfileController.class
 com/business/springservice/dto/CartDTO.class
 com/business/springservice/service/AnalyticsService.class
 com/business/springservice/controller/DashboardController.class
+com/business/springservice/config/CorsConfig$1.class
 com/business/springservice/dto/RevenueReportDTO.class
 com/business/springservice/controller/BusinessDocumentController.class
 com/business/springservice/repository/CartItemRepository.class
@@ -66,6 +69,7 @@ com/business/springservice/dto/LoginRequest.class
 com/business/springservice/service/OrderService.class
 com/business/springservice/dto/ProfileUpdateRequest.class
 com/business/springservice/controller/ShopController.class
+com/business/springservice/dto/SystemAnalyticsDataDTO$BusinessDocumentSummaryDTO.class
 com/business/springservice/dto/SystemAnalyticsDataDTO$OrderAnalyticsDTO.class
 com/business/springservice/controller/UserController.class
 com/business/springservice/repository/BusinessDocumentRepository.class
