@@ -27,14 +27,15 @@ echo -e "${YELLOW}Installing/updating dependencies...${NC}"
 
 # Check if .env file exists
 if [ ! -f ".env" ]; then
-    echo -e "${RED}Warning: .env file not found!${NC}"
-    echo -e "${YELLOW}Creating .env file with default values...${NC}"
-    cat > .env << EOF
-FLASK_APP=app.py
-FLASK_ENV=development
-PORT=5000
-GOOGLE_API_KEY=AIzaSyBkrRz9QaF439TPgDpAne2PnK6GaFv7u3I
-EOF
+    echo -e "${RED}Error: .env file not found!${NC}"
+    echo -e "${YELLOW}Please create .env file with the following content:${NC}"
+    echo -e ""
+    echo -e "FLASK_APP=app.py"
+    echo -e "FLASK_ENV=development"
+    echo -e "PORT=5000"
+    echo -e "GOOGLE_API_KEY=your_api_key_here"
+    echo -e ""
+    exit 1
 fi
 
 # Load environment variables

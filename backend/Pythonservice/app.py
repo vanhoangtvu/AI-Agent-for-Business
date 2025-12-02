@@ -15,7 +15,9 @@ app = Flask(__name__)
 CORS(app)
 
 # Configure Google Gemini API
-GOOGLE_API_KEY = os.getenv('GOOGLE_API_KEY', 'AIzaSyBkrRz9QaF439TPgDpAne2PnK6GaFv7u3I')
+GOOGLE_API_KEY = os.getenv('GOOGLE_API_KEY')
+if not GOOGLE_API_KEY:
+    raise ValueError("GOOGLE_API_KEY environment variable is not set. Please add it to .env file")
 genai.configure(api_key=GOOGLE_API_KEY)
 
 # Initialize ChromaDB

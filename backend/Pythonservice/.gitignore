@@ -18,6 +18,7 @@ build/
 *.swo
 
 # Environment
+.env
 .env.local
 .env.*.local
 
