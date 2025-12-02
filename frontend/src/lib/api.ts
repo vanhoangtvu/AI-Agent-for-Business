@@ -453,6 +453,11 @@ class ApiClient {
     return this.fetch(`/admin/dashboard/admin/revenue/monthly?months=${months}`);
   }
 
+  // System Report API
+  async getSystemReport() {
+    return this.fetch('/admin/dashboard/system-report');
+  }
+
   // Business Documents API
   async uploadDocument(file: File, description?: string) {
     const formData = new FormData();

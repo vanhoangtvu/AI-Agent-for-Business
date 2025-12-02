@@ -196,6 +196,9 @@ export default function UserManagement() {
             <Link href="/admin/revenue" className="px-6 py-4 text-gray-700 dark:text-gray-300 hover:text-purple-600 transition-colors whitespace-nowrap">
               Doanh thu
             </Link>
+            <Link href="/admin/reports" className="px-6 py-4 text-gray-700 dark:text-gray-300 hover:text-purple-600 transition-colors whitespace-nowrap">
+              Báo cáo
+            </Link>
             <Link href="/admin/users" className="px-6 py-4 font-semibold border-b-4 border-purple-600 text-purple-600 whitespace-nowrap">
               {userData.role === 'ADMIN' ? 'Người dùng' : 'Khách hàng'}
             </Link>
