@@ -7,8 +7,12 @@ import os
 
 # Import routes
 from routes.health import health_ns
-from routes.gemini import gemini_ns, load_gemini_models
+from routes.gemini import gemini_ns, load_gemini_models, set_rag_prompt_service as set_gemini_rag_service
 from routes.chroma import chroma_ns, set_chroma_client
+from routes.rag import rag_ns, set_rag_prompt_service
+
+# Import services
+from services.rag_prompt_service import RAGPromptService
 
 # Initialize Flask app
 app = Flask(__name__)
@@ -23,6 +27,11 @@ genai.configure(api_key=GOOGLE_API_KEY)
 # Initialize ChromaDB
 chroma_client = chromadb.PersistentClient(path="./chroma_data")
 set_chroma_client(chroma_client)
+
+# Initialize RAG Prompt Service
+rag_prompt_service = RAGPromptService(chroma_client)
+set_rag_prompt_service(rag_prompt_service)
+set_gemini_rag_service(rag_prompt_service)
 
 # Load Gemini models
 load_gemini_models()
@@ -41,6 +50,7 @@ api = Api(
 api.add_namespace(health_ns)
 api.add_namespace(gemini_ns)
 api.add_namespace(chroma_ns)
+api.add_namespace(rag_ns)
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)
