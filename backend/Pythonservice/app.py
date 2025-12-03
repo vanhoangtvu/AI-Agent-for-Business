@@ -1,22 +1,35 @@
-from flask import Flask
-from flask_restx import Api
-from flask_cors import CORS
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 import google.generativeai as genai
 import chromadb
 import os
 
-# Import routes
-from routes.health import health_ns
-from routes.gemini import gemini_ns, load_gemini_models, set_rag_prompt_service as set_gemini_rag_service
-from routes.chroma import chroma_ns, set_chroma_client
-from routes.rag import rag_ns, set_rag_prompt_service
+# Import routers
+from routes.health import router as health_router
+from routes.gemini import router as gemini_router, load_gemini_models, set_rag_prompt_service as set_gemini_rag_service
+from routes.chroma import router as chroma_router, set_chroma_client
+from routes.rag import router as rag_router, set_rag_prompt_service
 
 # Import services
 from services.rag_prompt_service import RAGPromptService
 
-# Initialize Flask app
-app = Flask(__name__)
-CORS(app)
+# Initialize FastAPI app
+app = FastAPI(
+    title="Python API Service with FastAPI",
+    description="API service with Google Gemini AI, ChromaDB, and RAG Prompts",
+    version="2.0.0",
+    docs_url="/docs",
+    redoc_url="/redoc"
+)
+
+# Configure CORS
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # Configure Google Gemini API
 GOOGLE_API_KEY = os.getenv('GOOGLE_API_KEY')
@@ -36,21 +49,20 @@ set_gemini_rag_service(rag_prompt_service)
 # Load Gemini models
 load_gemini_models()
 
-# Initialize API with Swagger documentation
-api = Api(
-    app,
-    version='1.0',
-    title='Python API Service',
-    description='API service with Swagger documentation',
-    doc='/docs',
-    doc_expansion='list'  # Auto-expand all endpoints
-)
+# Include routers
+app.include_router(health_router, prefix="/health", tags=["Health Check"])
+app.include_router(gemini_router, prefix="/gemini", tags=["Gemini AI"])
+app.include_router(chroma_router, prefix="/chroma", tags=["ChromaDB"])
+app.include_router(rag_router, prefix="/rag", tags=["RAG Prompts"])
 
-# Register namespaces
-api.add_namespace(health_ns)
-api.add_namespace(gemini_ns)
-api.add_namespace(chroma_ns)
-api.add_namespace(rag_ns)
+@app.get("/")
+async def root():
+    return {
+        "message": "Python API Service with FastAPI",
+        "docs": "/docs",
+        "redoc": "/redoc"
+    }
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=5000)

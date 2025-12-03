@@ -3,6 +3,7 @@ package com.business.springservice.controller;
 import com.business.springservice.dto.BusinessDashboardDTO;
 import com.business.springservice.dto.DashboardStatsDTO;
 import com.business.springservice.dto.RevenueReportDTO;
+import com.business.springservice.dto.SystemReportDTO;
 import com.business.springservice.service.DashboardService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -101,5 +102,25 @@ public class DashboardController {
     public ResponseEntity<List<RevenueReportDTO>> getAdminMonthlyRevenue(
             @RequestParam(defaultValue = "6") @Parameter(description = "Number of months") int months) {
         return ResponseEntity.ok(dashboardService.getRevenueByMonth(null, months));
+    }
+    
+    @GetMapping("/system-report")
+    @Operation(summary = "Get comprehensive system report", 
+               description = "Tự động tính toán và trả về báo cáo tổng hợp hệ thống bao gồm: " +
+                           "doanh thu (tổng, hôm nay, tuần, tháng, tăng trưởng), " +
+                           "thống kê sản phẩm (tổng, đang bán, hết hàng, tồn kho), " +
+                           "thống kê đơn hàng (tất cả trạng thái, tỷ lệ thành công), " +
+                           "thống kê khách hàng (tổng, mới, chuyển đổi), " +
+                           "thống kê doanh nghiệp (tổng, hoạt động, top seller), " +
+                           "top 10 sản phẩm bán chạy, " +
+                           "doanh thu 7 ngày gần nhất. " +
+                           "Admin và Business có thể truy cập.")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Successfully retrieved system report"),
+        @ApiResponse(responseCode = "401", description = "Unauthorized"),
+        @ApiResponse(responseCode = "403", description = "Access denied")
+    })
+    public ResponseEntity<SystemReportDTO> getSystemReport() {
+        return ResponseEntity.ok(dashboardService.getSystemReport());
     }
 }

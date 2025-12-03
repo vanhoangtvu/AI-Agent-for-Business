@@ -36,6 +36,7 @@
 /home/hv/DuAn/AI-Agent-for-Business/backend/SpringService/src/main/java/com/business/springservice/dto/RegisterRequest.java
 /home/hv/DuAn/AI-Agent-for-Business/backend/SpringService/src/main/java/com/business/springservice/dto/RevenueReportDTO.java
 /home/hv/DuAn/AI-Agent-for-Business/backend/SpringService/src/main/java/com/business/springservice/dto/SystemAnalyticsDataDTO.java
+/home/hv/DuAn/AI-Agent-for-Business/backend/SpringService/src/main/java/com/business/springservice/dto/SystemReportDTO.java
 /home/hv/DuAn/AI-Agent-for-Business/backend/SpringService/src/main/java/com/business/springservice/dto/UpdateCartItemRequest.java
 /home/hv/DuAn/AI-Agent-for-Business/backend/SpringService/src/main/java/com/business/springservice/dto/UserDTO.java
 /home/hv/DuAn/AI-Agent-for-Business/backend/SpringService/src/main/java/com/business/springservice/entity/BusinessDocument.java

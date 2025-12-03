@@ -41,6 +41,17 @@ Script sẽ tự động:
 - **GET** `/gemini/models` - Danh sách các Gemini models có sẵn
 - **POST** `/gemini/chat` - Chat với Gemini (response đầy đủ)
 - **POST** `/gemini/chat/stream` - Chat với Gemini (streaming response)
+- **POST** `/gemini/chat/rag` - Chat với Gemini sử dụng RAG prompts
+- **POST** `/gemini/chat/rag/stream` - Chat RAG với streaming
+
+### 🎯 RAG Prompts Management
+- **POST** `/rag/prompts` - Thêm RAG prompt mới
+- **GET** `/rag/prompts` - Xem tất cả RAG prompts
+- **GET** `/rag/prompts/{id}` - Xem prompt theo ID
+- **PUT** `/rag/prompts/{id}` - Cập nhật prompt
+- **DELETE** `/rag/prompts/{id}` - Xóa prompt
+- **DELETE** `/rag/prompts?category={name}` - Xóa prompts theo category
+- **GET** `/rag/stats` - Thống kê RAG prompts
 
 ### 💾 ChromaDB
 - **GET** `/chroma/collections` - Danh sách collections
@@ -105,10 +116,46 @@ curl -X POST http://113.178.203.147:5000/chroma/query \
   }'
 ```
 
-### Xem tất cả collections
+### ChromaDB - Xem tất cả collections
 
 ```bash
 curl http://113.178.203.147:5000/chroma/collections
+```
+
+### RAG Prompts - Thêm prompt
+
+```bash
+curl -X POST http://113.178.203.147:5000/rag/prompts \
+  -H "Content-Type: application/json" \
+  -d '{
+    "prompt": "Always greet users warmly and professionally",
+    "category": "greeting",
+    "tags": ["customer-service", "friendly"]
+  }'
+```
+
+### RAG Prompts - Xem prompts
+
+```bash
+# Xem tất cả
+curl http://113.178.203.147:5000/rag/prompts
+
+# Lọc theo category
+curl "http://113.178.203.147:5000/rag/prompts?category=greeting"
+
+# Xem thống kê
+curl http://113.178.203.147:5000/rag/stats
+```
+
+### Chat với RAG (AI sử dụng prompts đã lưu)
+
+```bash
+curl -X POST http://113.178.203.147:5000/gemini/chat/rag \
+  -H "Content-Type: application/json" \
+  -d '{
+    "message": "Hello, how are you?",
+    "model": "gemini-2.5-flash"
+  }'
 ```
 
 ---
@@ -130,26 +177,17 @@ backend/Pythonservice/
 ├── routes/             # API routes
 │   ├── health.py       # Health check
 │   ├── gemini.py       # Gemini AI endpoints
-│   └── chroma.py       # ChromaDB endpoints
+│   ├── chroma.py       # ChromaDB endpoints
+│   └── rag.py          # RAG Prompts endpoints
+├── services/           # Business logic
+│   └── rag_prompt_service.py  # RAG prompts management
 ├── chroma_data/        # ChromaDB storage (auto-created)
 ├── requirements.txt    # Dependencies
 ├── start.sh           # Start script
 ├── test_stream.html   # Test streaming chat
-└── README.md          # Documentation
+├── README.md          # Main documentation
+└── README_RAG.md      # RAG system detailed guide
 ```
-
----
-
-## 🎨 Test Streaming Chat UI
-
-Mở file `test_stream.html` trong trình duyệt để test streaming chat với giao diện đẹp.
-
-**Tính năng:**
-- ✨ Giao diện chat đẹp mắt
-- 💬 Streaming response theo thời gian thực
-- 🎯 Chọn model Gemini
-- ⚡ Typing indicator
-- 📱 Responsive design
 
 ---
 
@@ -167,9 +205,27 @@ API đã được cấu hình CORS để cho phép truy cập từ mọi origin.
 
 ---
 
+## 🎯 RAG System
+
+Hệ thống RAG (Retrieval-Augmented Generation) cho phép quản lý prompts cho AI:
+
+1. **Push prompts** vào ChromaDB qua API
+2. **Quản lý prompts** (thêm, sửa, xóa, xem)
+3. **Chat với RAG** - AI tự động áp dụng prompts khi trả lời
+
+**Xem chi tiết:** [`README_RAG.md`](./README_RAG.md)
+
+### Workflow cơ bản:
+1. Push prompts: `POST /rag/prompts`
+2. Xem prompts: `GET /rag/prompts`
+3. Chat với AI: `POST /gemini/chat/rag` (AI sẽ follow prompts)
+
+---
+
 ## 📝 Notes
 
 - ChromaDB data được lưu trong thư mục `./chroma_data`
+- RAG prompts được lưu trong collection `rag_prompts`
 - Gemini models list được cache khi khởi động server
 - Streaming sử dụng Server-Sent Events (SSE)
 - API key Gemini được load từ biến môi trường

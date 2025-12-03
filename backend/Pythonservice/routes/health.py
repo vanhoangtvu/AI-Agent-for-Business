@@ -1,11 +1,9 @@
-from flask_restx import Namespace, Resource
+from fastapi import APIRouter
 
-# Create namespace
-health_ns = Namespace('health', description='Health check operations')
+# Create router
+router = APIRouter()
 
-@health_ns.route('/')
-class Health(Resource):
-    @health_ns.doc('health_check')
-    def get(self):
-        '''Health check endpoint'''
-        return {'status': 'healthy', 'message': 'API is running'}, 200
+@router.get("/", summary="Health check", description="Check if API is running")
+async def health_check():
+    """Health check endpoint"""
+    return {'status': 'healthy', 'message': 'API is running'}

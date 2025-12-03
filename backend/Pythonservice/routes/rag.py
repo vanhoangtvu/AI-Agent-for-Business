@@ -2,12 +2,13 @@
 RAG Prompts API Routes
 Manages RAG prompts for AI responses
 """
-from flask_restx import Namespace, Resource, fields
-from flask import request
+from fastapi import APIRouter, HTTPException, Query
+from pydantic import BaseModel, Field
+from typing import Optional, List, Dict, Any
 from services.rag_prompt_service import RAGPromptService
 
-# Create namespace
-rag_ns = Namespace('rag', description='RAG Prompts management for AI responses')
+# Create router
+router = APIRouter()
 
 # Global service instance
 rag_prompt_service = None
@@ -17,198 +18,168 @@ def set_rag_prompt_service(service: RAGPromptService):
     global rag_prompt_service
     rag_prompt_service = service
 
-# Define models for Swagger documentation
-prompt_input_model = rag_ns.model('PromptInput', {
-    'prompt': fields.String(required=True, description='The RAG prompt text', example='When greeting users, always be friendly and professional.'),
-    'category': fields.String(required=False, description='Category of the prompt', example='greeting'),
-    'tags': fields.List(fields.String, required=False, description='Tags for the prompt', example=['customer-service', 'friendly']),
-    'metadata': fields.Raw(required=False, description='Additional metadata')
-})
+# Pydantic models
+class PromptInput(BaseModel):
+    prompt: str = Field(..., description="The RAG prompt text", example="When greeting users, always be friendly and professional.")
+    category: Optional[str] = Field(None, description="Category of the prompt", example="greeting")
+    tags: Optional[List[str]] = Field(None, description="Tags for the prompt", example=["customer-service", "friendly"])
+    metadata: Optional[Dict[str, Any]] = Field(None, description="Additional metadata")
 
-prompt_update_model = rag_ns.model('PromptUpdate', {
-    'prompt': fields.String(required=False, description='New prompt text'),
-    'category': fields.String(required=False, description='New category'),
-    'tags': fields.List(fields.String, required=False, description='New tags'),
-    'metadata': fields.Raw(required=False, description='New metadata')
-})
+class PromptUpdate(BaseModel):
+    prompt: Optional[str] = Field(None, description="New prompt text")
+    category: Optional[str] = Field(None, description="New category")
+    tags: Optional[List[str]] = Field(None, description="New tags")
+    metadata: Optional[Dict[str, Any]] = Field(None, description="New metadata")
 
-prompt_response_model = rag_ns.model('PromptResponse', {
-    'id': fields.String(description='Prompt ID'),
-    'prompt': fields.String(description='Prompt text'),
-    'category': fields.String(description='Category'),
-    'tags': fields.List(fields.String, description='Tags'),
-    'metadata': fields.Raw(description='Metadata'),
-    'message': fields.String(description='Success message')
-})
+class PromptResponse(BaseModel):
+    id: str
+    prompt: str
+    category: str
+    tags: List[str]
+    metadata: Dict[str, Any]
+    message: str
 
-prompt_list_model = rag_ns.model('PromptListItem', {
-    'id': fields.String(description='Prompt ID'),
-    'prompt': fields.String(description='Prompt text'),
-    'category': fields.String(description='Category'),
-    'tags': fields.List(fields.String, description='Tags'),
-    'metadata': fields.Raw(description='Metadata')
-})
+class PromptListItem(BaseModel):
+    id: str
+    prompt: str
+    category: str
+    tags: List[str]
+    metadata: Dict[str, Any]
 
-stats_model = rag_ns.model('Stats', {
-    'total_prompts': fields.Integer(description='Total number of prompts'),
-    'categories': fields.Raw(description='Prompts count by category'),
-    'collection_name': fields.String(description='ChromaDB collection name')
-})
+class Stats(BaseModel):
+    total_prompts: int
+    categories: Dict[str, int]
+    collection_name: str
 
-
-@rag_ns.route('/prompts')
-class RAGPrompts(Resource):
-    @rag_ns.doc('push_rag_prompt')
-    @rag_ns.expect(prompt_input_model)
-    @rag_ns.marshal_with(prompt_response_model, code=201)
-    def post(self):
-        '''Push a new RAG prompt to ChromaDB'''
-        try:
-            data = rag_ns.payload
-            prompt = data.get('prompt')
-            category = data.get('category')
-            tags = data.get('tags')
-            metadata = data.get('metadata')
-            
-            if not prompt:
-                rag_ns.abort(400, 'Prompt text is required')
-            
-            result = rag_prompt_service.push_prompt(
-                prompt=prompt,
-                category=category,
-                tags=tags,
-                metadata=metadata
-            )
-            
-            return result, 201
-        except Exception as e:
-            rag_ns.abort(500, f'Error pushing prompt: {str(e)}')
-    
-    @rag_ns.doc('get_rag_prompts')
-    @rag_ns.param('category', 'Filter by category', _in='query', required=False)
-    @rag_ns.param('tags', 'Filter by tags (comma-separated)', _in='query', required=False)
-    @rag_ns.param('limit', 'Maximum number of prompts to return', _in='query', type='integer', required=False)
-    @rag_ns.marshal_list_with(prompt_list_model)
-    def get(self):
-        '''Get all RAG prompts from ChromaDB'''
-        try:
-            # Get query parameters
-            category = request.args.get('category')
-            tags_str = request.args.get('tags')
-            limit = request.args.get('limit', type=int)
-            
-            # Parse tags
-            tags = tags_str.split(',') if tags_str else None
-            
-            prompts = rag_prompt_service.get_prompts(
-                category=category,
-                tags=tags,
-                limit=limit
-            )
-            
-            return prompts, 200
-        except Exception as e:
-            rag_ns.abort(500, f'Error getting prompts: {str(e)}')
-    
-    @rag_ns.doc('delete_all_prompts')
-    @rag_ns.param('category', 'Delete only prompts in this category', _in='query', required=False)
-    def delete(self):
-        '''Delete all RAG prompts or prompts in a specific category'''
-        try:
-            category = request.args.get('category')
-            
-            result = rag_prompt_service.delete_all_prompts(category=category)
-            
-            return result, 200
-        except Exception as e:
-            rag_ns.abort(500, f'Error deleting prompts: {str(e)}')
+class DeleteResponse(BaseModel):
+    id: Optional[str] = None
+    deleted_count: Optional[int] = None
+    category: Optional[str] = None
+    message: str
 
 
-@rag_ns.route('/prompts/<string:prompt_id>')
-@rag_ns.param('prompt_id', 'The prompt ID')
-class RAGPrompt(Resource):
-    @rag_ns.doc('get_rag_prompt')
-    @rag_ns.marshal_with(prompt_list_model)
-    def get(self, prompt_id):
-        '''Get a specific RAG prompt by ID'''
-        try:
-            prompt = rag_prompt_service.get_prompt_by_id(prompt_id)
-            
-            if not prompt:
-                rag_ns.abort(404, f'Prompt with ID "{prompt_id}" not found')
-            
-            return prompt, 200
-        except Exception as e:
-            rag_ns.abort(500, f'Error getting prompt: {str(e)}')
-    
-    @rag_ns.doc('update_rag_prompt')
-    @rag_ns.expect(prompt_update_model)
-    @rag_ns.marshal_with(prompt_response_model)
-    def put(self, prompt_id):
-        '''Update a specific RAG prompt'''
-        try:
-            data = rag_ns.payload
-            
-            result = rag_prompt_service.update_prompt(
-                prompt_id=prompt_id,
-                prompt=data.get('prompt'),
-                category=data.get('category'),
-                tags=data.get('tags'),
-                metadata=data.get('metadata')
-            )
-            
-            return result, 200
-        except ValueError as e:
-            rag_ns.abort(404, str(e))
-        except Exception as e:
-            rag_ns.abort(500, f'Error updating prompt: {str(e)}')
-    
-    @rag_ns.doc('delete_rag_prompt')
-    def delete(self, prompt_id):
-        '''Delete a specific RAG prompt'''
-        try:
-            result = rag_prompt_service.delete_prompt(prompt_id)
-            return result, 200
-        except ValueError as e:
-            rag_ns.abort(404, str(e))
-        except Exception as e:
-            rag_ns.abort(500, f'Error deleting prompt: {str(e)}')
+@router.post("/prompts", response_model=PromptResponse, status_code=201, summary="Push RAG prompt")
+async def push_rag_prompt(prompt_input: PromptInput):
+    """Push a new RAG prompt to ChromaDB"""
+    try:
+        result = rag_prompt_service.push_prompt(
+            prompt=prompt_input.prompt,
+            category=prompt_input.category,
+            tags=prompt_input.tags,
+            metadata=prompt_input.metadata
+        )
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f'Error pushing prompt: {str(e)}')
 
 
-@rag_ns.route('/prompts/context')
-class RAGPromptsContext(Resource):
-    @rag_ns.doc('get_prompts_context')
-    @rag_ns.param('category', 'Filter by category', _in='query', required=False)
-    @rag_ns.param('tags', 'Filter by tags (comma-separated)', _in='query', required=False)
-    def get(self):
-        '''Get all RAG prompts formatted as context string for AI'''
-        try:
-            category = request.args.get('category')
-            tags_str = request.args.get('tags')
-            tags = tags_str.split(',') if tags_str else None
-            
-            context = rag_prompt_service.get_all_prompts_as_context(
-                category=category,
-                tags=tags
-            )
-            
-            return {
-                'context': context,
-                'category': category,
-                'tags': tags
-            }, 200
-        except Exception as e:
-            rag_ns.abort(500, f'Error generating context: {str(e)}')
+@router.get("/prompts", response_model=List[PromptListItem], summary="Get RAG prompts")
+async def get_rag_prompts(
+    category: Optional[str] = Query(None, description="Filter by category"),
+    tags: Optional[str] = Query(None, description="Filter by tags (comma-separated)"),
+    limit: Optional[int] = Query(None, description="Maximum number of prompts to return")
+):
+    """Get all RAG prompts from ChromaDB"""
+    try:
+        # Parse tags
+        tags_list = tags.split(',') if tags else None
+        
+        prompts = rag_prompt_service.get_prompts(
+            category=category,
+            tags=tags_list,
+            limit=limit
+        )
+        return prompts
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f'Error getting prompts: {str(e)}')
 
 
-@rag_ns.route('/stats')
-class RAGStats(Resource):
-    @rag_ns.doc('get_rag_stats')
-    @rag_ns.marshal_with(stats_model)
-    def get(self):
-        '''Get statistics about RAG prompts'''
-        try:
-            stats = rag_prompt_service.get_stats()
-            return stats, 200
-        except Exception as e:
-            rag_ns.abort(500, f'Error getting stats: {str(e)}')
+@router.delete("/prompts", response_model=DeleteResponse, summary="Delete all prompts")
+async def delete_all_prompts(
+    category: Optional[str] = Query(None, description="Delete only prompts in this category")
+):
+    """Delete all RAG prompts or prompts in a specific category"""
+    try:
+        result = rag_prompt_service.delete_all_prompts(category=category)
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f'Error deleting prompts: {str(e)}')
+
+
+@router.get("/prompts/{prompt_id}", response_model=PromptListItem, summary="Get prompt by ID")
+async def get_rag_prompt(prompt_id: str):
+    """Get a specific RAG prompt by ID"""
+    try:
+        prompt = rag_prompt_service.get_prompt_by_id(prompt_id)
+        
+        if not prompt:
+            raise HTTPException(status_code=404, detail=f'Prompt with ID "{prompt_id}" not found')
+        
+        return prompt
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f'Error getting prompt: {str(e)}')
+
+
+@router.put("/prompts/{prompt_id}", response_model=PromptResponse, summary="Update prompt")
+async def update_rag_prompt(prompt_id: str, prompt_update: PromptUpdate):
+    """Update a specific RAG prompt"""
+    try:
+        result = rag_prompt_service.update_prompt(
+            prompt_id=prompt_id,
+            prompt=prompt_update.prompt,
+            category=prompt_update.category,
+            tags=prompt_update.tags,
+            metadata=prompt_update.metadata
+        )
+        return result
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f'Error updating prompt: {str(e)}')
+
+
+@router.delete("/prompts/{prompt_id}", response_model=DeleteResponse, summary="Delete prompt")
+async def delete_rag_prompt(prompt_id: str):
+    """Delete a specific RAG prompt"""
+    try:
+        result = rag_prompt_service.delete_prompt(prompt_id)
+        return result
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f'Error deleting prompt: {str(e)}')
+
+
+@router.get("/prompts/context", summary="Get prompts as context")
+async def get_prompts_context(
+    category: Optional[str] = Query(None, description="Filter by category"),
+    tags: Optional[str] = Query(None, description="Filter by tags (comma-separated)")
+):
+    """Get all RAG prompts formatted as context string for AI"""
+    try:
+        tags_list = tags.split(',') if tags else None
+        
+        context = rag_prompt_service.get_all_prompts_as_context(
+            category=category,
+            tags=tags_list
+        )
+        
+        return {
+            'context': context,
+            'category': category,
+            'tags': tags_list
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f'Error generating context: {str(e)}')
+
+
+@router.get("/stats", response_model=Stats, summary="Get RAG stats")
+async def get_rag_stats():
+    """Get statistics about RAG prompts"""
+    try:
+        stats = rag_prompt_service.get_stats()
+        return stats
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f'Error getting stats: {str(e)}')
