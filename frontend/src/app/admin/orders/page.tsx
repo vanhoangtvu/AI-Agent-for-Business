@@ -10,20 +10,25 @@ interface OrderItem {
   productId: number;
   productName: string;
   quantity: number;
-  price: number;
+  price?: number; // For backward compatibility
+  productPrice?: number; // Backend uses this field
+  subtotal?: number; // Backend provides this
 }
 
 interface Order {
   id: number;
-  orderDate: string;
+  createdAt: string;
+  orderDate?: string; // For backward compatibility
   totalAmount: number;
   status: string;
   note?: string;
   customerId: number;
   customerName: string;
   customerEmail: string;
+  customerPhone?: string;
   shippingAddress: string;
-  items: OrderItem[];
+  orderItems: OrderItem[];
+  items?: OrderItem[]; // For backward compatibility
 }
 
 export default function OrderManagement() {
@@ -106,6 +111,23 @@ export default function OrderManagement() {
   const viewOrderDetail = async (order: Order) => {
     try {
       const fullOrder = await apiClient.getOrder(order.id);
+      console.log('Order details from API:', fullOrder);
+      
+      // Normalize data from backend to match frontend interface
+      if (!fullOrder.orderItems && !fullOrder.items) {
+        fullOrder.orderItems = [];
+      }
+      
+      // Use orderItems as primary source, fallback to items for backward compatibility
+      if (!fullOrder.orderItems && fullOrder.items) {
+        fullOrder.orderItems = fullOrder.items;
+      }
+      
+      // Set orderDate from createdAt for backward compatibility
+      if (!fullOrder.orderDate && fullOrder.createdAt) {
+        fullOrder.orderDate = fullOrder.createdAt;
+      }
+      
       setSelectedOrder(fullOrder);
       setShowDetailModal(true);
     } catch (error) {
@@ -325,7 +347,19 @@ export default function OrderManagement() {
               <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4 mb-4">
                 <h3 className="font-semibold text-gray-800 dark:text-white mb-2">Thông tin đơn hàng</h3>
                 <div className="space-y-1 text-sm">
-                  <p className="text-gray-700 dark:text-gray-300"><span className="font-semibold">Ngày đặt:</span> {new Date(selectedOrder.orderDate).toLocaleString('vi-VN')}</p>
+                  <p className="text-gray-700 dark:text-gray-300">
+                    <span className="font-semibold">Ngày đặt:</span> {
+                      (selectedOrder.createdAt || selectedOrder.orderDate)
+                        ? new Date(selectedOrder.createdAt || selectedOrder.orderDate!).toLocaleString('vi-VN', { 
+                            year: 'numeric', 
+                            month: 'long', 
+                            day: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                          })
+                        : 'Không xác định'
+                    }
+                  </p>
                   <p className="text-gray-700 dark:text-gray-300"><span className="font-semibold">Trạng thái:</span> <span className={`px-3 py-1 rounded-full text-xs font-semibold ${statusColors[selectedOrder.status]}`}>{statusNames[selectedOrder.status]}</span></p>
                   {selectedOrder.note && <p className="text-gray-700 dark:text-gray-300"><span className="font-semibold">Ghi chú:</span> {selectedOrder.note}</p>}
                 </div>
@@ -335,17 +369,29 @@ export default function OrderManagement() {
               <div className="mb-4">
                 <h3 className="font-semibold text-gray-800 dark:text-white mb-3">Sản phẩm</h3>
                 <div className="space-y-2">
-                  {selectedOrder.items.map(item => (
-                    <div key={item.id} className="flex items-center justify-between bg-gray-50 dark:bg-gray-700 rounded-lg p-3">
-                      <div className="flex-1">
-                        <p className="font-semibold text-gray-800 dark:text-white">{item.productName}</p>
-                        <p className="text-sm text-gray-500 dark:text-gray-400">Số lượng: {item.quantity}</p>
-                      </div>
-                      <p className="font-semibold text-gray-800 dark:text-white">
-                        {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(item.price * item.quantity)}
-                      </p>
-                    </div>
-                  ))}
+                  {((selectedOrder.orderItems && selectedOrder.orderItems.length > 0) || (selectedOrder.items && selectedOrder.items.length > 0)) ? (
+                    (selectedOrder.orderItems || selectedOrder.items || []).map(item => {
+                      // Use subtotal if available, otherwise calculate from productPrice or price
+                      const itemTotal = item.subtotal || (item.productPrice || item.price || 0) * item.quantity;
+                      const itemPrice = item.productPrice || item.price || 0;
+                      
+                      return (
+                        <div key={item.id} className="flex items-center justify-between bg-gray-50 dark:bg-gray-700 rounded-lg p-3">
+                          <div className="flex-1">
+                            <p className="font-semibold text-gray-800 dark:text-white">{item.productName}</p>
+                            <p className="text-sm text-gray-500 dark:text-gray-400">
+                              Số lượng: {item.quantity} × {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(itemPrice)}
+                            </p>
+                          </div>
+                          <p className="font-semibold text-gray-800 dark:text-white">
+                            {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(itemTotal)}
+                          </p>
+                        </div>
+                      );
+                    })
+                  ) : (
+                    <p className="text-gray-500 dark:text-gray-400 text-center py-4">Không có sản phẩm trong đơn hàng</p>
+                  )}
                 </div>
               </div>
 
